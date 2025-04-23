@@ -1,0 +1,8 @@
+.envrc
+target
+.idea
+*.spkg
+*.log
+
+*.env
+.DS_Store
