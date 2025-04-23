@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "frens",
     "raydium_amm",
     "spl_token",
     "pumpfun",

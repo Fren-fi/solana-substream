@@ -1,0 +1,45 @@
+specVersion: v0.1.0
+package:
+  name: 'frens_events'
+  version: v0.1.0
+  description: Frens events substream
+  url: https://github.com/Fren-fi/solana-substream
+  image: ./frens.png
+
+imports:
+  solana: https://spkg.io/streamingfast/solana-common-v0.3.0.spkg
+
+protobuf:
+  files:
+    - program.proto
+  importPaths:
+    - ./proto
+  excludePaths:
+    - sf/substreams/rpc
+    - sf/substreams/v1
+    - sf/substreams/sink
+    - sf/substreams/index
+    - sf/substreams/index/v1
+    - instructions.proto # sol.instructions.v1 from the v0.2.0 spkg
+    - transactions.proto # sol.transactions.v1 from the v0.2.0 spkg
+    - google
+
+binaries:
+  default:
+    type: wasm/rust-v1+wasm-bindgen-shims
+    file: ../target/wasm32-unknown-unknown/release/substreams.wasm
+
+modules:
+ - name: frens_events
+   kind: map
+   initialBlock: 374460200
+   inputs:
+   - map: solana:blocks_without_votes
+   output:
+     type: proto:substreams.v1.program.Data
+   blockFilter:
+     module: solana:program_ids_without_votes
+     query:
+       string: program:LanD8FpTBBvzZFXjTxsAoipkFsxPUCDB4qAqKxYDiNP
+
+network: solana-devnet 

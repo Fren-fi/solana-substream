@@ -1,0 +1,336 @@
+syntax = "proto3";
+
+package substreams.v1.program;
+
+message FrensBlockEvents {
+  repeated FrensTransactionEvents transactions = 2;
+}
+
+message FrensTransactionEvents {
+  string signature = 1;
+  repeated FrensEvent events = 2;
+}
+
+message FrensEvent {
+  oneof event {
+    PoolCreateEvent_Event pool_create_event = 1;
+    TradeEvent_Event trade_event = 2;
+    ClaimVestedEvent_Event claim_vested = 3;
+    CreateVestingEvent_Event create_vesting_event = 4;
+  }
+}
+
+message Data {
+  repeated ClaimVestedEvent_Event claim_vested_event_event_list = 1;
+  repeated CreateVestingEvent_Event create_vesting_event_event_list = 2;
+  repeated PoolCreateEvent_Event pool_create_event_event_list = 3;
+  repeated TradeEvent_Event trade_event_event_list = 4;
+  repeated BuyExactIn_Instruction buy_exact_in_instruction_list = 5;
+  repeated BuyExactOut_Instruction buy_exact_out_instruction_list = 6;
+  repeated ClaimPlatformFee_Instruction claim_platform_fee_instruction_list = 7;
+  repeated ClaimVestedToken_Instruction claim_vested_token_instruction_list = 8;
+  repeated CollectFee_Instruction collect_fee_instruction_list = 9;
+  repeated CollectMigrateFee_Instruction collect_migrate_fee_instruction_list = 10;
+  repeated CreateConfig_Instruction create_config_instruction_list = 11;
+  repeated CreatePlatformConfig_Instruction create_platform_config_instruction_list = 12;
+  repeated CreateVestingAccount_Instruction create_vesting_account_instruction_list = 13;
+  repeated Initialize_Instruction initialize_instruction_list = 14;
+  repeated MigrateToAmm_Instruction migrate_to_amm_instruction_list = 15;
+  repeated MigrateToCpswap_Instruction migrate_to_cpswap_instruction_list = 16;
+  repeated SellExactIn_Instruction sell_exact_in_instruction_list = 17;
+  repeated SellExactOut_Instruction sell_exact_out_instruction_list = 18;
+  repeated UpdateConfig_Instruction update_config_instruction_list = 19;
+  repeated UpdatePlatformConfig_Instruction update_platform_config_instruction_list = 20;
+}
+message ClaimVestedEvent_Event {
+  string trx_hash = 1;
+}
+message CreateVestingEvent_Event {
+  string trx_hash = 1;
+}
+message PoolCreateEvent_Event {
+  string trx_hash = 1;
+  string pool_state = 2;
+  string creator = 3;
+  string config = 4;
+  MintParams base_mint_param = 5;
+  CurveParamsEnum curve_param = 6;
+  VestingParams vesting_param = 7;
+}
+message TradeEvent_Event {
+  string trx_hash = 1;
+}
+
+message BuyExactIn_Instruction {
+  string trx_hash = 1;
+  uint64 amount_in = 2;
+  uint64 minimum_amount_out = 3;
+  uint64 share_fee_rate = 4;
+  string acct_payer = 5;
+  string acct_authority = 6;
+  string acct_global_config = 7;
+  string acct_platform_config = 8;
+  string acct_pool_state = 9;
+  string acct_user_base_token = 10;
+  string acct_user_quote_token = 11;
+  string acct_base_vault = 12;
+  string acct_quote_vault = 13;
+  string acct_base_token_mint = 14;
+  string acct_quote_token_mint = 15;
+  string acct_base_token_program = 16;
+  string acct_event_authority = 17;
+  string acct_program = 18;
+}
+message BuyExactOut_Instruction {
+  string trx_hash = 1;
+  uint64 amount_out = 2;
+  uint64 maximum_amount_in = 3;
+  uint64 share_fee_rate = 4;
+  string acct_payer = 5;
+  string acct_authority = 6;
+  string acct_global_config = 7;
+  string acct_platform_config = 8;
+  string acct_pool_state = 9;
+  string acct_user_base_token = 10;
+  string acct_user_quote_token = 11;
+  string acct_base_vault = 12;
+  string acct_quote_vault = 13;
+  string acct_base_token_mint = 14;
+  string acct_quote_token_mint = 15;
+  string acct_base_token_program = 16;
+  string acct_event_authority = 17;
+  string acct_program = 18;
+}
+message ClaimPlatformFee_Instruction {
+  string trx_hash = 1;
+  string acct_platform_fee_wallet = 2;
+  string acct_authority = 3;
+  string acct_pool_state = 4;
+  string acct_platform_config = 5;
+  string acct_quote_vault = 6;
+  string acct_recipient_token_account = 7;
+  string acct_quote_mint = 8;
+}
+message ClaimVestedToken_Instruction {
+  string trx_hash = 1;
+  string acct_beneficiary = 2;
+  string acct_authority = 3;
+  string acct_pool_state = 4;
+  string acct_vesting_record = 5;
+  string acct_base_vault = 6;
+  string acct_user_base_token = 7;
+  string acct_base_token_mint = 8;
+}
+message CollectFee_Instruction {
+  string trx_hash = 1;
+  string acct_owner = 2;
+  string acct_authority = 3;
+  string acct_pool_state = 4;
+  string acct_global_config = 5;
+  string acct_quote_vault = 6;
+  string acct_quote_mint = 7;
+  string acct_recipient_token_account = 8;
+}
+message CollectMigrateFee_Instruction {
+  string trx_hash = 1;
+  string acct_owner = 2;
+  string acct_authority = 3;
+  string acct_pool_state = 4;
+  string acct_global_config = 5;
+  string acct_quote_vault = 6;
+  string acct_quote_mint = 7;
+  string acct_recipient_token_account = 8;
+}
+message CreateConfig_Instruction {
+  string trx_hash = 1;
+  uint64 curve_type = 2;
+  uint64 index = 3;
+  uint64 migrate_fee = 4;
+  uint64 trade_fee_rate = 5;
+  string acct_global_config = 6;
+  string acct_quote_token_mint = 7;
+  string acct_protocol_fee_owner = 8;
+  string acct_migrate_fee_owner = 9;
+  string acct_migrate_to_amm_wallet = 10;
+  string acct_migrate_to_cpswap_wallet = 11;
+}
+message CreatePlatformConfig_Instruction {
+  string trx_hash = 1;
+  PlatformParams platform_params = 2;
+  string acct_platform_admin = 3;
+  string acct_platform_fee_wallet = 4;
+  string acct_platform_nft_wallet = 5;
+  string acct_platform_config = 6;
+}
+message CreateVestingAccount_Instruction {
+  string trx_hash = 1;
+  uint64 share_amount = 2;
+  string acct_creator = 3;
+  string acct_beneficiary = 4;
+  string acct_pool_state = 5;
+  string acct_vesting_record = 6;
+}
+message Initialize_Instruction {
+  string trx_hash = 1;
+  MintParams base_mint_param = 2;
+  CurveParamsEnum curve_param = 3;
+  VestingParams vesting_param = 4;
+  string acct_payer = 5;
+  string acct_creator = 6;
+  string acct_global_config = 7;
+  string acct_platform_config = 8;
+  string acct_authority = 9;
+  string acct_pool_state = 10;
+  string acct_base_mint = 11;
+  string acct_quote_mint = 12;
+  string acct_base_vault = 13;
+  string acct_quote_vault = 14;
+  string acct_metadata_account = 15;
+  string acct_event_authority = 16;
+  string acct_program = 17;
+}
+message MigrateToAmm_Instruction {
+  string trx_hash = 1;
+  uint64 base_lot_size = 2;
+  uint64 quote_lot_size = 3;
+  uint64 market_vault_signer_nonce = 4;
+  string acct_payer = 5;
+  string acct_base_mint = 6;
+  string acct_quote_mint = 7;
+  string acct_market = 8;
+  string acct_request_queue = 9;
+  string acct_event_queue = 10;
+  string acct_bids = 11;
+  string acct_asks = 12;
+  string acct_market_vault_signer = 13;
+  string acct_market_base_vault = 14;
+  string acct_market_quote_vault = 15;
+  string acct_amm_pool = 16;
+  string acct_amm_authority = 17;
+  string acct_amm_open_orders = 18;
+  string acct_amm_lp_mint = 19;
+  string acct_amm_base_vault = 20;
+  string acct_amm_quote_vault = 21;
+  string acct_amm_target_orders = 22;
+  string acct_amm_config = 23;
+  string acct_amm_create_fee_destination = 24;
+  string acct_authority = 25;
+  string acct_pool_state = 26;
+  string acct_global_config = 27;
+  string acct_base_vault = 28;
+  string acct_quote_vault = 29;
+  string acct_pool_lp_token = 30;
+}
+message MigrateToCpswap_Instruction {
+  string trx_hash = 1;
+  string acct_payer = 2;
+  string acct_base_mint = 3;
+  string acct_quote_mint = 4;
+  string acct_platform_config = 5;
+  string acct_cpswap_pool = 6;
+  string acct_cpswap_authority = 7;
+  string acct_cpswap_lp_mint = 8;
+  string acct_cpswap_base_vault = 9;
+  string acct_cpswap_quote_vault = 10;
+  string acct_cpswap_config = 11;
+  string acct_cpswap_create_pool_fee = 12;
+  string acct_cpswap_observation = 13;
+  string acct_lock_authority = 14;
+  string acct_lock_lp_vault = 15;
+  string acct_authority = 16;
+  string acct_pool_state = 17;
+  string acct_global_config = 18;
+  string acct_base_vault = 19;
+  string acct_quote_vault = 20;
+  string acct_pool_lp_token = 21;
+}
+message SellExactIn_Instruction {
+  string trx_hash = 1;
+  uint64 amount_in = 2;
+  uint64 minimum_amount_out = 3;
+  uint64 share_fee_rate = 4;
+  string acct_payer = 5;
+  string acct_authority = 6;
+  string acct_global_config = 7;
+  string acct_platform_config = 8;
+  string acct_pool_state = 9;
+  string acct_user_base_token = 10;
+  string acct_user_quote_token = 11;
+  string acct_base_vault = 12;
+  string acct_quote_vault = 13;
+  string acct_base_token_mint = 14;
+  string acct_quote_token_mint = 15;
+  string acct_base_token_program = 16;
+  string acct_event_authority = 17;
+  string acct_program = 18;
+}
+message SellExactOut_Instruction {
+  string trx_hash = 1;
+  uint64 amount_out = 2;
+  uint64 maximum_amount_in = 3;
+  uint64 share_fee_rate = 4;
+  string acct_payer = 5;
+  string acct_authority = 6;
+  string acct_global_config = 7;
+  string acct_platform_config = 8;
+  string acct_pool_state = 9;
+  string acct_user_base_token = 10;
+  string acct_user_quote_token = 11;
+  string acct_base_vault = 12;
+  string acct_quote_vault = 13;
+  string acct_base_token_mint = 14;
+  string acct_quote_token_mint = 15;
+  string acct_base_token_program = 16;
+  string acct_event_authority = 17;
+  string acct_program = 18;
+}
+message UpdateConfig_Instruction {
+  string trx_hash = 1;
+  uint64 param = 2;
+  uint64 value = 3;
+  string acct_global_config = 4;
+}
+message UpdatePlatformConfig_Instruction {
+  string trx_hash = 1;
+  PlatformConfigParamEnum param = 2;
+  string acct_platform_admin = 3;
+  string acct_platform_config = 4;
+}
+
+enum CurveParamsEnum {
+  CURVE_PARAMS_CONSTANT = 0;
+  CURVE_PARAMS_FIXED = 1;
+  CURVE_PARAMS_LINEAR = 2;
+}
+message MigrateNftInfo {
+  uint64 platform_scale = 1;
+  uint64 creator_scale = 2;
+  uint64 burn_scale = 3;
+}
+message MintParams {
+  uint64 decimals = 1;
+  string name = 2;
+  string symbol = 3;
+  string uri = 4;
+}
+enum PlatformConfigParamEnum {
+  PLATFORM_CONFIG_PARAM_FEE_WALLET = 0;
+  PLATFORM_CONFIG_PARAM_N_F_T_WALLET = 1;
+  PLATFORM_CONFIG_PARAM_MIGRATE_NFT_INFO = 2;
+  PLATFORM_CONFIG_PARAM_FEE_RATE = 3;
+  PLATFORM_CONFIG_PARAM_NAME = 4;
+  PLATFORM_CONFIG_PARAM_WEB = 5;
+  PLATFORM_CONFIG_PARAM_IMG = 6;
+}
+message PlatformParams {
+  MigrateNftInfo migrate_nft_info = 1;
+  uint64 fee_rate = 2;
+  string name = 3;
+  string web = 4;
+  string img = 5;
+}
+message VestingParams {
+  uint64 total_locked_amount = 1;
+  uint64 cliff_period = 2;
+  uint64 unlock_period = 3;
+}
