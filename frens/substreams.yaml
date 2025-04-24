@@ -1,7 +1,7 @@
 specVersion: v0.1.0
 package:
   name: 'frens_events'
-  version: v0.1.0
+  version: v0.1.1
   description: Frens events substream
   url: https://github.com/Fren-fi/solana-substream
   image: ./frens.png

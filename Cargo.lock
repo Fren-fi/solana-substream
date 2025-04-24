@@ -702,7 +702,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 
 [[package]]
-name = "frens"
+name = "frens-substream"
 version = "0.0.1"
 dependencies = [
  "anchor-lang",
@@ -1314,22 +1314,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "52c2c1bf36ddb1a1c396b3601a3cec27c2462e45f07c386894ec3ccf5332bd16"
 dependencies = [
  "prost 0.13.5",
-]
-
-[[package]]
-name = "pumpfun-substream"
-version = "0.1.5"
-dependencies = [
- "anyhow",
- "borsh 1.5.1",
- "bs58 0.5.1",
- "lazy_static",
- "prost 0.11.9",
- "spl-token-substream",
- "substreams 0.5.22",
- "substreams-solana",
- "substreams-solana-utils",
- "system-program-substream",
 ]
 
 [[package]]

@@ -1,10 +1,10 @@
 [package]
-name = "frens"
+name = "frens-substream"
 version = "0.0.1"
 edition = "2021"
 
 [lib]
-name = "frens_substreams"
+name = "frens_substream"
 crate-type = ["cdylib"]
 
 [dependencies]
