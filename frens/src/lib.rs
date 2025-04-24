@@ -197,7 +197,7 @@ fn _parse_create_vesting_instruction(
         trx_hash: transaction.id(),
         pool_state: event.pool_state.to_string(),
         beneficiary: event.beneficiary.to_string(),
-        claim_amount: event.claim_amount,
+        share_amount: event.share_amount,
     })
 }
 

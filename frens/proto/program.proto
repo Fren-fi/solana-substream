@@ -44,10 +44,18 @@ message Data {
 }
 message ClaimVestedEvent_Event {
   string trx_hash = 1;
+  string pool_state = 2;
+  string beneficiary = 3;
+  uint64 claim_amount = 4;
 }
+
 message CreateVestingEvent_Event {
   string trx_hash = 1;
+  string pool_state = 2;
+  string beneficiary = 3;
+  uint64 share_amount = 4;
 }
+
 message PoolCreateEvent_Event {
   string trx_hash = 1;
   string pool_state = 2;

@@ -83,12 +83,24 @@ pub struct Data {
 pub struct ClaimVestedEventEvent {
     #[prost(string, tag="1")]
     pub trx_hash: ::prost::alloc::string::String,
+    #[prost(string, tag="2")]
+    pub pool_state: ::prost::alloc::string::String,
+    #[prost(string, tag="3")]
+    pub beneficiary: ::prost::alloc::string::String,
+    #[prost(uint64, tag="4")]
+    pub claim_amount: u64,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateVestingEventEvent {
     #[prost(string, tag="1")]
     pub trx_hash: ::prost::alloc::string::String,
+    #[prost(string, tag="2")]
+    pub pool_state: ::prost::alloc::string::String,
+    #[prost(string, tag="3")]
+    pub beneficiary: ::prost::alloc::string::String,
+    #[prost(uint64, tag="4")]
+    pub share_amount: u64,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
