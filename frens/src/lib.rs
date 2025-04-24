@@ -4,7 +4,6 @@ mod pb;
 use anchor_lang::AnchorDeserialize;
 use anchor_lang::Discriminator;
 use anyhow::{anyhow, Error};
-use base64::prelude::*;
 
 use substreams_solana_utils as utils;
 use utils::instruction::{
@@ -16,9 +15,6 @@ use utils::transaction::{get_context, TransactionContext};
 
 use pb::substreams::v1::program::frens_event::Event;
 use pb::substreams::v1::program::*;
-
-use sologger_log_context::programs_selector::ProgramsSelector;
-use sologger_log_context::sologger_log_context::LogContext;
 use substreams_solana::pb::sf::solana::r#type::v1::Block;
 use substreams_solana::pb::sf::solana::r#type::v1::ConfirmedTransaction;
 
@@ -26,13 +22,11 @@ const PROGRAM_ID: &str = "LanD8FpTBBvzZFXjTxsAoipkFsxPUCDB4qAqKxYDiNP";
 
 #[substreams::handlers::map]
 fn frens_events(block: Block) -> Result<FrensBlockEvents, Error> {
-    substreams::log::println("init block ...");
     let transactions = parse_block(&block)?;
     Ok(FrensBlockEvents { transactions })
 }
 
 pub fn parse_block(block: &Block) -> Result<Vec<FrensTransactionEvents>, Error> {
-    substreams::log::println("parsing block ...");
     let mut block_events: Vec<FrensTransactionEvents> = Vec::new();
     for transaction in block.transactions() {
         let events = parse_transaction(transaction)?;
@@ -85,11 +79,17 @@ pub fn parse_instruction(
     context: &TransactionContext,
 ) -> Result<Option<Event>, Error> {
     if instruction.program_id().to_string() != PROGRAM_ID {
-        return Err(anyhow!("Not a Frens instruction."));
+        return Ok(None);
     }
 
     let slice_u8: &[u8] = &instruction.data()[..];
-    match &slice_u8[8..] {
+    if slice_u8.len() < 16 {
+        return Ok(None);
+    }
+
+    // substreams::log::println(format!("slice_u8: {:?}", slice_u8));
+
+    match &slice_u8[8..16] {
         idl::idl::program::events::PoolCreateEvent::DISCRIMINATOR => {
             Ok(Some(Event::PoolCreateEvent(_parse_create_instruction(
                 transaction,
@@ -97,18 +97,21 @@ pub fn parse_instruction(
                 context,
             )?)))
         }
-        // idl::idl::program::client::args::BuyExactIn::DISCRIMINATOR => Ok(Some(Event::TradeEvent(
-        //     _parse_trade_instruction(transaction, instruction, context)?,
-        // ))),
-        // idl::idl::program::client::args::BuyExactOut::DISCRIMINATOR => Ok(Some(Event::TradeEvent(
-        //     _parse_trade_instruction(transaction, instruction, context)?,
-        // ))),
-        // idl::idl::program::client::args::SellExactIn::DISCRIMINATOR => Ok(Some(Event::TradeEvent(
-        //     _parse_trade_instruction(transaction, instruction, context)?,
-        // ))),
-        // idl::idl::program::client::args::SellExactOut::DISCRIMINATOR => Ok(Some(
-        //     Event::TradeEvent(_parse_trade_instruction(transaction, instruction, context)?),
-        // )),
+
+        idl::idl::program::events::TradeEvent::DISCRIMINATOR => Ok(Some(Event::TradeEvent(
+            _parse_trade_instruction(transaction, instruction, context)?,
+        ))),
+
+        idl::idl::program::events::ClaimVestedEvent::DISCRIMINATOR => Ok(Some(Event::ClaimVested(
+            _parse_claim_instruction(transaction, instruction, context)?,
+        ))),
+
+        idl::idl::program::events::CreateVestingEvent::DISCRIMINATOR => {
+            Ok(Some(Event::CreateVestingEvent(
+                _parse_create_vesting_instruction(transaction, instruction, context)?,
+            )))
+        }
+
         _ => Ok(None),
     }
 }
@@ -146,8 +149,55 @@ fn _parse_trade_instruction(
     instruction: &StructuredInstruction,
     _context: &TransactionContext,
 ) -> Result<TradeEventEvent, Error> {
+    let slice_u8: &[u8] = &instruction.data()[..];
+    let event = idl::idl::program::events::TradeEvent::deserialize(&mut &slice_u8[16..])?;
     Ok(TradeEventEvent {
         trx_hash: transaction.id(),
+        pool_state: event.pool_state.to_string(),
+        total_base_sell: event.total_base_sell,
+        virtual_base: event.virtual_base,
+        virtual_quote: event.virtual_quote,
+        real_base_before: event.real_base_before,
+        real_quote_before: event.real_quote_before,
+        real_base_after: event.real_base_after,
+        real_quote_after: event.real_quote_after,
+        amount_in: event.amount_in,
+        amount_out: event.amount_out,
+        protocol_fee: event.protocol_fee,
+        platform_fee: event.platform_fee,
+        share_fee: event.share_fee,
+        trade_direction: map_enum_trade_direction(event.trade_direction),
+        pool_status: map_enum_pool_status(event.pool_status),
+    })
+}
+
+fn _parse_claim_instruction(
+    transaction: &ConfirmedTransaction,
+    instruction: &StructuredInstruction,
+    _context: &TransactionContext,
+) -> Result<ClaimVestedEventEvent, Error> {
+    let slice_u8: &[u8] = &instruction.data()[..];
+    let event = idl::idl::program::events::ClaimVestedEvent::deserialize(&mut &slice_u8[16..])?;
+    Ok(ClaimVestedEventEvent {
+        trx_hash: transaction.id(),
+        pool_state: event.pool_state.to_string(),
+        beneficiary: event.beneficiary.to_string(),
+        claim_amount: event.claim_amount,
+    })
+}
+
+fn _parse_create_vesting_instruction(
+    transaction: &ConfirmedTransaction,
+    instruction: &StructuredInstruction,
+    _context: &TransactionContext,
+) -> Result<CreateVestingEventEvent, Error> {
+    let slice_u8: &[u8] = &instruction.data()[..];
+    let event = idl::idl::program::events::CreateVestingEvent::deserialize(&mut &slice_u8[16..])?;
+    Ok(CreateVestingEventEvent {
+        trx_hash: transaction.id(),
+        pool_state: event.pool_state.to_string(),
+        beneficiary: event.beneficiary.to_string(),
+        claim_amount: event.claim_amount,
     })
 }
 

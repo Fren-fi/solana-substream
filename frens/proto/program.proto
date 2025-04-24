@@ -59,6 +59,21 @@ message PoolCreateEvent_Event {
 }
 message TradeEvent_Event {
   string trx_hash = 1;
+  string pool_state = 2;
+  uint64 total_base_sell = 3;
+  uint64 virtual_base = 4;
+  uint64 virtual_quote = 5;
+  uint64 real_base_before = 6;
+  uint64 real_quote_before = 7;
+  uint64 real_base_after = 8;
+  uint64 real_quote_after = 9;
+  uint64 amount_in = 10;
+  uint64 amount_out = 11;
+  uint64 protocol_fee = 12;
+  uint64 platform_fee = 13;
+  uint64 share_fee = 14;
+  TradeDirectionEnum trade_direction = 15;
+  PoolStatusEnum pool_status = 16;
 }
 
 message BuyExactIn_Instruction {
@@ -322,6 +337,18 @@ enum PlatformConfigParamEnum {
   PLATFORM_CONFIG_PARAM_WEB = 5;
   PLATFORM_CONFIG_PARAM_IMG = 6;
 }
+
+enum PoolStatusEnum {
+  Pool_Status_Fund = 0;
+  Pool_Status_Migrate = 1;
+  Pool_Status_TRADE = 2;
+}
+
+enum TradeDirectionEnum {
+  Trade_Direction_BUY = 0;
+  Trade_Direction_SELL = 1;
+}
+
 message PlatformParams {
   MigrateNftInfo migrate_nft_info = 1;
   uint64 fee_rate = 2;

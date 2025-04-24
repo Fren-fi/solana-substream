@@ -36,7 +36,7 @@ modules:
    inputs:
    - map: solana:blocks_without_votes
    output:
-     type: proto:substreams.v1.program.Data
+     type: proto:substreams.v1.program.FrensBlockEvents
    blockFilter:
      module: solana:program_ids_without_votes
      query:
