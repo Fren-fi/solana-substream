@@ -1,3 +1,4 @@
+mod frens;
 mod idl;
 mod pb;
 
@@ -10,6 +11,7 @@ use utils::instruction::{
     get_structured_instructions, StructuredInstruction, StructuredInstructions,
 };
 use utils::log::Log;
+use utils::pubkey::Pubkey;
 use utils::system_program::SYSTEM_PROGRAM_ID;
 use utils::transaction::{get_context, TransactionContext};
 
@@ -18,9 +20,9 @@ use pb::substreams::v1::program::*;
 use substreams_solana::pb::sf::solana::r#type::v1::Block;
 use substreams_solana::pb::sf::solana::r#type::v1::ConfirmedTransaction;
 
-const PROGRAM_ID: &str = "LanD8FpTBBvzZFXjTxsAoipkFsxPUCDB4qAqKxYDiNP";
-const CONTENT_PLATFORM_ID: &str = "9ygRFuHFYi5msB2FmDQ1c8C4L3bT6fu2y1onwwMGizNp";
-const CREATOR_PLATFORM_ID: &str = "KzxoZ2X6p5Qq76G36THPNi1HEVcL9B7PWs3zDDzKVZd";
+use frens::CONTENT_PLATFORM_ID;
+use frens::CREATOR_PLATFORM_ID;
+use frens::FRENS_PROGRAM_ID;
 
 #[substreams::handlers::map]
 fn frens_events(block: Block) -> Result<FrensBlockEvents, Error> {
@@ -54,7 +56,7 @@ pub fn parse_transaction(transaction: &ConfirmedTransaction) -> Result<Vec<Frens
     let instructions = get_structured_instructions(transaction).unwrap();
 
     for instruction in instructions.flattened().iter() {
-        if instruction.program_id().to_string() != PROGRAM_ID {
+        if instruction.program_id() != FRENS_PROGRAM_ID {
             continue;
         }
 
@@ -80,7 +82,7 @@ pub fn parse_instruction(
     instruction: &StructuredInstruction,
     context: &TransactionContext,
 ) -> Result<Option<Event>, Error> {
-    if instruction.program_id().to_string() != PROGRAM_ID {
+    if instruction.program_id() != FRENS_PROGRAM_ID {
         return Ok(None);
     }
 
@@ -138,7 +140,7 @@ fn _parse_create_instruction(
     let event = idl::idl::program::events::PoolCreateEvent::deserialize(&mut &slice_u8[16..])?;
     Ok(Some(PoolCreateEventEvent {
         trx_hash: transaction.id(),
-        platform_id: platform_id,
+        platform_id: platform_id.to_string(),
         pool_state: event.pool_state.to_string(),
         creator: event.creator.to_string(),
         config: event.config.to_string(),
@@ -171,7 +173,7 @@ fn _parse_trade_instruction(
     let event = idl::idl::program::events::TradeEvent::deserialize(&mut &slice_u8[16..])?;
     Ok(Some(TradeEventEvent {
         trx_hash: transaction.id(),
-        platform_id: platform_id,
+        platform_id: platform_id.to_string(),
         pool_state: event.pool_state.to_string(),
         total_base_sell: event.total_base_sell,
         virtual_base: event.virtual_base,
@@ -220,11 +222,11 @@ fn _parse_create_vesting_instruction(
     })
 }
 
-fn _get_platform_id(instruction: &StructuredInstruction) -> String {
+fn _get_platform_id(instruction: &StructuredInstruction) -> Pubkey {
     let top = instruction.top_instruction().unwrap();
     let accounts = top.accounts();
-    let platform_id = accounts[3].to_string();
-    platform_id
+    let platform_id = accounts[3];
+    platform_id.to_pubkey().unwrap()
 }
 
 // #[substreams::handlers::map]
