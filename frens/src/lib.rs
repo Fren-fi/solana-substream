@@ -1,6 +1,4 @@
-mod frens;
 mod idl;
-mod pb;
 
 use anchor_lang::AnchorDeserialize;
 use anchor_lang::Discriminator;
@@ -15,11 +13,13 @@ use utils::pubkey::Pubkey;
 use utils::system_program::SYSTEM_PROGRAM_ID;
 use utils::transaction::{get_context, TransactionContext};
 
+pub mod pb;
 use pb::substreams::v1::program::frens_event::Event;
 use pb::substreams::v1::program::*;
 use substreams_solana::pb::sf::solana::r#type::v1::Block;
 use substreams_solana::pb::sf::solana::r#type::v1::ConfirmedTransaction;
 
+pub mod frens;
 use frens::CONTENT_PLATFORM_ID;
 use frens::CREATOR_PLATFORM_ID;
 use frens::FRENS_PROGRAM_ID;
