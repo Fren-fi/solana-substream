@@ -58,30 +58,32 @@ message CreateVestingEvent_Event {
 
 message PoolCreateEvent_Event {
   string trx_hash = 1;
-  string pool_state = 2;
-  string creator = 3;
-  string config = 4;
-  MintParams base_mint_param = 5;
-  CurveParamsEnum curve_param = 6;
-  VestingParams vesting_param = 7;
+  string platform_id = 2;
+  string pool_state = 3;
+  string creator = 4;
+  string config = 5;
+  MintParams base_mint_param = 6;
+  CurveParamsEnum curve_param = 7;
+  VestingParams vesting_param = 8;
 }
 message TradeEvent_Event {
   string trx_hash = 1;
-  string pool_state = 2;
-  uint64 total_base_sell = 3;
-  uint64 virtual_base = 4;
-  uint64 virtual_quote = 5;
-  uint64 real_base_before = 6;
-  uint64 real_quote_before = 7;
-  uint64 real_base_after = 8;
-  uint64 real_quote_after = 9;
-  uint64 amount_in = 10;
-  uint64 amount_out = 11;
-  uint64 protocol_fee = 12;
-  uint64 platform_fee = 13;
-  uint64 share_fee = 14;
-  TradeDirectionEnum trade_direction = 15;
-  PoolStatusEnum pool_status = 16;
+  string platform_id = 2;
+  string pool_state = 3;
+  uint64 total_base_sell = 4;
+  uint64 virtual_base = 5;
+  uint64 virtual_quote = 6;
+  uint64 real_base_before = 7;
+  uint64 real_quote_before = 8;
+  uint64 real_base_after = 9;
+  uint64 real_quote_after = 10;
+  uint64 amount_in = 11;
+  uint64 amount_out = 12;
+  uint64 protocol_fee = 13;
+  uint64 platform_fee = 14;
+  uint64 share_fee = 15;
+  TradeDirectionEnum trade_direction = 16;
+  PoolStatusEnum pool_status = 17;
 }
 
 message BuyExactIn_Instruction {

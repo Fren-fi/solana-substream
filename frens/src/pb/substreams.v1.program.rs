@@ -108,16 +108,18 @@ pub struct PoolCreateEventEvent {
     #[prost(string, tag="1")]
     pub trx_hash: ::prost::alloc::string::String,
     #[prost(string, tag="2")]
-    pub pool_state: ::prost::alloc::string::String,
+    pub platform_id: ::prost::alloc::string::String,
     #[prost(string, tag="3")]
-    pub creator: ::prost::alloc::string::String,
+    pub pool_state: ::prost::alloc::string::String,
     #[prost(string, tag="4")]
+    pub creator: ::prost::alloc::string::String,
+    #[prost(string, tag="5")]
     pub config: ::prost::alloc::string::String,
-    #[prost(message, optional, tag="5")]
+    #[prost(message, optional, tag="6")]
     pub base_mint_param: ::core::option::Option<MintParams>,
-    #[prost(enumeration="CurveParamsEnum", tag="6")]
+    #[prost(enumeration="CurveParamsEnum", tag="7")]
     pub curve_param: i32,
-    #[prost(message, optional, tag="7")]
+    #[prost(message, optional, tag="8")]
     pub vesting_param: ::core::option::Option<VestingParams>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -126,34 +128,36 @@ pub struct TradeEventEvent {
     #[prost(string, tag="1")]
     pub trx_hash: ::prost::alloc::string::String,
     #[prost(string, tag="2")]
+    pub platform_id: ::prost::alloc::string::String,
+    #[prost(string, tag="3")]
     pub pool_state: ::prost::alloc::string::String,
-    #[prost(uint64, tag="3")]
-    pub total_base_sell: u64,
     #[prost(uint64, tag="4")]
-    pub virtual_base: u64,
+    pub total_base_sell: u64,
     #[prost(uint64, tag="5")]
-    pub virtual_quote: u64,
+    pub virtual_base: u64,
     #[prost(uint64, tag="6")]
-    pub real_base_before: u64,
+    pub virtual_quote: u64,
     #[prost(uint64, tag="7")]
-    pub real_quote_before: u64,
+    pub real_base_before: u64,
     #[prost(uint64, tag="8")]
-    pub real_base_after: u64,
+    pub real_quote_before: u64,
     #[prost(uint64, tag="9")]
-    pub real_quote_after: u64,
+    pub real_base_after: u64,
     #[prost(uint64, tag="10")]
-    pub amount_in: u64,
+    pub real_quote_after: u64,
     #[prost(uint64, tag="11")]
-    pub amount_out: u64,
+    pub amount_in: u64,
     #[prost(uint64, tag="12")]
-    pub protocol_fee: u64,
+    pub amount_out: u64,
     #[prost(uint64, tag="13")]
-    pub platform_fee: u64,
+    pub protocol_fee: u64,
     #[prost(uint64, tag="14")]
+    pub platform_fee: u64,
+    #[prost(uint64, tag="15")]
     pub share_fee: u64,
-    #[prost(enumeration="TradeDirectionEnum", tag="15")]
+    #[prost(enumeration="TradeDirectionEnum", tag="16")]
     pub trade_direction: i32,
-    #[prost(enumeration="PoolStatusEnum", tag="16")]
+    #[prost(enumeration="PoolStatusEnum", tag="17")]
     pub pool_status: i32,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]

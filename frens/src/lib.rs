@@ -19,6 +19,8 @@ use substreams_solana::pb::sf::solana::r#type::v1::Block;
 use substreams_solana::pb::sf::solana::r#type::v1::ConfirmedTransaction;
 
 const PROGRAM_ID: &str = "LanD8FpTBBvzZFXjTxsAoipkFsxPUCDB4qAqKxYDiNP";
+const CONTENT_PLATFORM_ID: &str = "9ygRFuHFYi5msB2FmDQ1c8C4L3bT6fu2y1onwwMGizNp";
+const CREATOR_PLATFORM_ID: &str = "KzxoZ2X6p5Qq76G36THPNi1HEVcL9B7PWs3zDDzKVZd";
 
 #[substreams::handlers::map]
 fn frens_events(block: Block) -> Result<FrensBlockEvents, Error> {
@@ -91,16 +93,22 @@ pub fn parse_instruction(
 
     match &slice_u8[8..16] {
         idl::idl::program::events::PoolCreateEvent::DISCRIMINATOR => {
-            Ok(Some(Event::PoolCreateEvent(_parse_create_instruction(
-                transaction,
-                instruction,
-                context,
-            )?)))
+            let data = _parse_create_instruction(transaction, instruction, context);
+            if data.is_ok() {
+                let event = data?.unwrap();
+                return Ok(Some(Event::PoolCreateEvent(event)));
+            }
+            return Ok(None);
         }
 
-        idl::idl::program::events::TradeEvent::DISCRIMINATOR => Ok(Some(Event::TradeEvent(
-            _parse_trade_instruction(transaction, instruction, context)?,
-        ))),
+        idl::idl::program::events::TradeEvent::DISCRIMINATOR => {
+            let data = _parse_trade_instruction(transaction, instruction, context);
+            if data.is_ok() {
+                let event = data?.unwrap();
+                return Ok(Some(Event::TradeEvent(event)));
+            }
+            return Ok(None);
+        }
 
         idl::idl::program::events::ClaimVestedEvent::DISCRIMINATOR => Ok(Some(Event::ClaimVested(
             _parse_claim_instruction(transaction, instruction, context)?,
@@ -120,12 +128,17 @@ fn _parse_create_instruction(
     transaction: &ConfirmedTransaction,
     instruction: &StructuredInstruction,
     _context: &TransactionContext,
-) -> Result<PoolCreateEventEvent, Error> {
-    let slice_u8: &[u8] = &instruction.data()[..];
+) -> Result<Option<PoolCreateEventEvent>, Error> {
+    let platform_id = _get_platform_id(&instruction);
+    if platform_id != CREATOR_PLATFORM_ID && platform_id != CONTENT_PLATFORM_ID {
+        return Ok(None);
+    }
 
+    let slice_u8: &[u8] = &instruction.data()[..];
     let event = idl::idl::program::events::PoolCreateEvent::deserialize(&mut &slice_u8[16..])?;
-    Ok(PoolCreateEventEvent {
+    Ok(Some(PoolCreateEventEvent {
         trx_hash: transaction.id(),
+        platform_id: platform_id,
         pool_state: event.pool_state.to_string(),
         creator: event.creator.to_string(),
         config: event.config.to_string(),
@@ -141,18 +154,24 @@ fn _parse_create_instruction(
             cliff_period: event.vesting_param.cliff_period,
             unlock_period: event.vesting_param.unlock_period,
         }),
-    })
+    }))
 }
 
 fn _parse_trade_instruction(
     transaction: &ConfirmedTransaction,
     instruction: &StructuredInstruction,
     _context: &TransactionContext,
-) -> Result<TradeEventEvent, Error> {
+) -> Result<Option<TradeEventEvent>, Error> {
+    let platform_id = _get_platform_id(&instruction);
+    if platform_id != CREATOR_PLATFORM_ID && platform_id != CONTENT_PLATFORM_ID {
+        return Ok(None);
+    }
+
     let slice_u8: &[u8] = &instruction.data()[..];
     let event = idl::idl::program::events::TradeEvent::deserialize(&mut &slice_u8[16..])?;
-    Ok(TradeEventEvent {
+    Ok(Some(TradeEventEvent {
         trx_hash: transaction.id(),
+        platform_id: platform_id,
         pool_state: event.pool_state.to_string(),
         total_base_sell: event.total_base_sell,
         virtual_base: event.virtual_base,
@@ -168,7 +187,7 @@ fn _parse_trade_instruction(
         share_fee: event.share_fee,
         trade_direction: map_enum_trade_direction(event.trade_direction),
         pool_status: map_enum_pool_status(event.pool_status),
-    })
+    }))
 }
 
 fn _parse_claim_instruction(
@@ -199,6 +218,13 @@ fn _parse_create_vesting_instruction(
         beneficiary: event.beneficiary.to_string(),
         share_amount: event.share_amount,
     })
+}
+
+fn _get_platform_id(instruction: &StructuredInstruction) -> String {
+    let top = instruction.top_instruction().unwrap();
+    let accounts = top.accounts();
+    let platform_id = accounts[3].to_string();
+    platform_id
 }
 
 // #[substreams::handlers::map]
