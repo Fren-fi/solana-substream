@@ -5,7 +5,7 @@ edition = "2021"
 
 [lib]
 name = "frens_substream"
-crate-type = ["cdylib"]
+crate-type = ["lib", "cdylib"]
 
 [dependencies]
 # prost = "0.13"
