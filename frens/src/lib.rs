@@ -60,7 +60,7 @@ pub fn parse_transaction(transaction: &ConfirmedTransaction) -> Result<Vec<Frens
             continue;
         }
 
-        substreams::log::println(format!("trx: {:?}", &transaction.id()));
+        // substreams::log::println(format!("trx: {:?}", &transaction.id()));
 
         match parse_instruction(&transaction, &instruction, &context) {
             Ok(Some(event)) => events.push(FrensEvent { event: Some(event) }),
@@ -97,8 +97,9 @@ pub fn parse_instruction(
         idl::idl::program::events::PoolCreateEvent::DISCRIMINATOR => {
             let data = _parse_create_instruction(transaction, instruction, context);
             if data.is_ok() {
-                let event = data?.unwrap();
-                return Ok(Some(Event::PoolCreateEvent(event)));
+                if let Some(event) = data? {
+                    return Ok(Some(Event::PoolCreateEvent(event)));
+                }
             }
             return Ok(None);
         }
@@ -106,8 +107,9 @@ pub fn parse_instruction(
         idl::idl::program::events::TradeEvent::DISCRIMINATOR => {
             let data = _parse_trade_instruction(transaction, instruction, context);
             if data.is_ok() {
-                let event = data?.unwrap();
-                return Ok(Some(Event::TradeEvent(event)));
+                if let Some(event) = data? {
+                    return Ok(Some(Event::TradeEvent(event)));
+                }
             }
             return Ok(None);
         }
@@ -136,11 +138,14 @@ fn _parse_create_instruction(
         return Ok(None);
     }
 
+    let mint_key = _get_mint(&instruction);
+
     let slice_u8: &[u8] = &instruction.data()[..];
     let event = idl::idl::program::events::PoolCreateEvent::deserialize(&mut &slice_u8[16..])?;
     Ok(Some(PoolCreateEventEvent {
         trx_hash: transaction.id(),
         platform_id: platform_id.to_string(),
+        mint: mint_key.to_string(),
         pool_state: event.pool_state.to_string(),
         creator: event.creator.to_string(),
         config: event.config.to_string(),
@@ -169,11 +174,14 @@ fn _parse_trade_instruction(
         return Ok(None);
     }
 
+    let mint_key: Pubkey = _get_mint_for_trade(&instruction);
+
     let slice_u8: &[u8] = &instruction.data()[..];
     let event = idl::idl::program::events::TradeEvent::deserialize(&mut &slice_u8[16..])?;
     Ok(Some(TradeEventEvent {
         trx_hash: transaction.id(),
         platform_id: platform_id.to_string(),
+        mint: mint_key.to_string(),
         pool_state: event.pool_state.to_string(),
         total_base_sell: event.total_base_sell,
         virtual_base: event.virtual_base,
@@ -227,6 +235,20 @@ fn _get_platform_id(instruction: &StructuredInstruction) -> Pubkey {
     let accounts = top.accounts();
     let platform_id = accounts[3];
     platform_id.to_pubkey().unwrap()
+}
+
+fn _get_mint(instruction: &StructuredInstruction) -> Pubkey {
+    let top = instruction.top_instruction().unwrap();
+    let accounts = top.accounts();
+    let mint_key = accounts[6];
+    mint_key.to_pubkey().unwrap()
+}
+
+fn _get_mint_for_trade(instruction: &StructuredInstruction) -> Pubkey {
+    let top = instruction.top_instruction().unwrap();
+    let accounts = top.accounts();
+    let mint_key = accounts[9];
+    mint_key.to_pubkey().unwrap()
 }
 
 // #[substreams::handlers::map]

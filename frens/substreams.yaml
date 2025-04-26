@@ -1,7 +1,7 @@
 specVersion: v0.1.0
 package:
   name: 'frens_events'
-  version: v0.1.2
+  version: v0.1.3
   description: Frens events substream
   url: https://frens.ai
   image: ./frens.png
@@ -27,7 +27,7 @@ protobuf:
 binaries:
   default:
     type: wasm/rust-v1+wasm-bindgen-shims
-    file: ../target/wasm32-unknown-unknown/release/substreams.wasm
+    file: ../target/wasm32-unknown-unknown/release/frens_substream.wasm
 
 modules:
  - name: frens_events
