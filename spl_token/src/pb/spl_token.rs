@@ -91,8 +91,6 @@ pub struct TransferEvent {
     pub destination: ::core::option::Option<TokenAccount>,
     #[prost(string, tag="3")]
     pub authority: ::prost::alloc::string::String,
-    /// optional uint64 source_pre_balance = 5;
-    /// optional uint64 destination_pre_balance = 6;
     #[prost(uint64, tag="4")]
     pub amount: u64,
 }

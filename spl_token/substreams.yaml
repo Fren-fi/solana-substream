@@ -1,9 +1,8 @@
 specVersion: v0.1.0
 package:
-  name: 'spl_token_events'
-  version: v0.1.7
+  name: 'frens_spl_token_events'
+  version: v0.1.4
   description: SPL Token Program events substream
-  url: https://github.com/0xpapercut/solana-substreams
   image: ./sol.png
 
 imports:
@@ -14,11 +13,20 @@ protobuf:
     - spl_token.proto
   importPaths:
     - ./proto
+  excludePaths:
+    - sf/substreams/rpc
+    - sf/substreams/v1
+    - sf/substreams/sink
+    - sf/substreams/index
+    - sf/substreams/index/v1
+    - instructions.proto # sol.instructions.v1 from the v0.2.0 spkg
+    - transactions.proto # sol.transactions.v1 from the v0.2.0 spkg
+    - google
 
 binaries:
   default:
     type: wasm/rust-v1
-    file: target/wasm32-unknown-unknown/release/spl_token_substream.wasm
+    file: ../target/wasm32-unknown-unknown/release/spl_token_substream.wasm
 
 modules:
   - name: spl_token_events
