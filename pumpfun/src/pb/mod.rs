@@ -1,4 +1,9 @@
 // @generated
+// @@protoc_insertion_point(attribute:pumpfun)
+pub mod pumpfun {
+    include!("pumpfun.rs");
+    // @@protoc_insertion_point(pumpfun)
+}
 pub mod sf {
     pub mod solana {
         pub mod r#type {
@@ -21,9 +26,4 @@ pub mod sf {
             }
         }
     }
-}
-// @@protoc_insertion_point(attribute:spl_token)
-pub mod spl_token {
-    include!("spl_token.rs");
-    // @@protoc_insertion_point(spl_token)
 }

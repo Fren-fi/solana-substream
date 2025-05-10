@@ -8,7 +8,6 @@ name = "frens_substream"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-# prost = "0.13"
 prost-types = "0.13"
 substreams-solana-program-instructions = "0.2"
 anchor-lang = ">=0.31.0"
