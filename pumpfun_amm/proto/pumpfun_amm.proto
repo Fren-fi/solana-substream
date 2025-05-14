@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package pumpfun_amm;
+
+message PumpfunAmmBlockEvents {
+  repeated PumpfunAmmTransactionEvents transactions = 1;
+}
+
+message PumpfunAmmTransactionEvents {
+  string signature = 1;
+  repeated PumpfunAmmEvent events = 2;
+}
+
+message PumpfunAmmEvent {
+  oneof event {
+    LiquidityEvent liquidity = 1;
+    SwapEvent swap = 2;
+    CreatePoolEvent create_pool = 3;
+  }
+}
+
+message CreatePoolEvent {
+  string pool = 1;
+  optional string creator = 2;
+  optional string base_mint = 3;
+  optional string quote_mint = 4;
+  optional uint32 base_mint_decimals = 5;
+  optional uint32 quote_mint_decimals = 6;
+  optional uint64 base_amount_in = 7;
+  optional uint64 quote_amount_in = 8;
+  optional uint64 pool_base_amount = 9;
+  optional uint64 pool_quote_amount = 10;
+  optional string coin_creator = 11;
+  optional int64 timestamp = 12;
+}
+
+message LiquidityEvent {
+  string pool = 1;
+  string user = 2;
+  bool is_add = 3;
+  optional uint64 pool_base_token_reserves = 4;
+  optional uint64 pool_quote_token_reserves = 5;
+}
+
+message SwapEvent {
+  string user = 1;
+  string mint = 2;
+  string bonding_curve = 3;
+  uint64 min_quote_amount_out = 4;
+  uint64 base_amount_in = 5;
+  string direction = 6;
+  bool is_buy = 7;
+  optional uint64 virtual_sol_reserves = 8;
+  optional uint64 virtual_token_reserves = 9;
+  optional uint64 real_sol_reserves = 10;
+  optional uint64 real_token_reserves = 11;
+  optional uint64 user_token_pre_balance = 12;
+  optional uint64 protocol_fee = 13;
+  optional uint64 coin_creator_fee = 14;
+  optional int64 timestamp = 15;
+}

@@ -1,10 +1,10 @@
 [workspace]
 members = [
-    "raydium_amm",
     "spl_token",
     "pumpfun",
     "system_program",
     "mpl_token_metadata",
+    "pumpfun_amm",
 ]
 resolver = "2"
 

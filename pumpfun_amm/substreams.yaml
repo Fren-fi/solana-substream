@@ -1,0 +1,37 @@
+specVersion: v0.1.0
+package:
+  name: pumpfun_amm_events
+  version: v0.1.0
+
+imports:
+  sol: https://spkg.io/streamingfast/solana-common-v0.3.0.spkg
+
+protobuf:
+  files:
+    - pumpfun_amm.proto
+  importPaths:
+    - ./proto
+  excludePaths:
+    - sf/substreams/rpc
+    - sf/substreams/v1
+    - sf/substreams/sink
+    - sf/substreams/index
+    - sf/substreams/index/v1
+    - instructions.proto # sol.instructions.v1 from the v0.2.0 spkg
+    - transactions.proto # sol.transactions.v1 from the v0.2.0 spkg
+    - google
+
+binaries:
+  default:
+    type: wasm/rust-v1
+    file: ../target/wasm32-unknown-unknown/release/pumpfun_substream.wasm
+
+modules:
+  - name: pumpfunAmm_events
+    kind: map
+    inputs:
+      - map: sol:blocks_without_votes
+    output:
+      type: proto:pumpfun.PumpfunAmmBlockEvents
+
+network: solana

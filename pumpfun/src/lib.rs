@@ -1,24 +1,26 @@
 use anyhow::Context;
 use anyhow::{anyhow, Error};
 
-use substreams_solana::pb::sf::solana::r#type::v1::ConfirmedTransaction;
 use substreams_solana::pb::sf::solana::r#type::v1::Block;
+use substreams_solana::pb::sf::solana::r#type::v1::ConfirmedTransaction;
 
-use substreams_solana_utils::spl_token::TOKEN_PROGRAM_ID;
 use substreams_solana_utils as utils;
-use utils::instruction::{get_structured_instructions, StructuredInstruction, StructuredInstructions};
+use substreams_solana_utils::spl_token::TOKEN_PROGRAM_ID;
+use utils::instruction::{
+    get_structured_instructions, StructuredInstruction, StructuredInstructions,
+};
+use utils::log::Log;
 use utils::system_program::SYSTEM_PROGRAM_ID;
 use utils::transaction::{get_context, TransactionContext};
-use utils::log::Log;
 
 pub mod pumpfun;
-use pumpfun::PUMPFUN_PROGRAM_ID;
-use pumpfun::log::PumpfunLog;
 use pumpfun::instruction::PumpfunInstruction;
+use pumpfun::log::PumpfunLog;
+use pumpfun::PUMPFUN_PROGRAM_ID;
 
 pub mod pb;
-use pb::pumpfun::*;
 use pb::pumpfun::pumpfun_event::Event;
+use pb::pumpfun::*;
 
 use system_program_substream;
 
@@ -44,7 +46,7 @@ pub fn parse_block(block: &Block) -> Result<Vec<PumpfunTransactionEvents>, Error
 
 pub fn parse_transaction(transaction: &ConfirmedTransaction) -> Result<Vec<PumpfunEvent>, Error> {
     if let Some(_) = transaction.meta.as_ref().unwrap().err {
-        return Ok(Vec::new())
+        return Ok(Vec::new());
     }
 
     let mut events: Vec<PumpfunEvent> = Vec::new();
@@ -58,13 +60,15 @@ pub fn parse_transaction(transaction: &ConfirmedTransaction) -> Result<Vec<Pumpf
         }
 
         match parse_instruction(&instruction, &context) {
-            Ok(Some(event)) => {
-                events.push(PumpfunEvent {
-                    event: Some(event),
-                })
-            }
+            Ok(Some(event)) => events.push(PumpfunEvent { event: Some(event) }),
             Ok(None) => (),
-            Err(error) => return Err(anyhow!("Transaction {} error: {}", &context.signature, error)),
+            Err(error) => {
+                return Err(anyhow!(
+                    "Transaction {} error: {}",
+                    &context.signature,
+                    error
+                ))
+            }
         }
     }
     Ok(events)
@@ -72,31 +76,38 @@ pub fn parse_transaction(transaction: &ConfirmedTransaction) -> Result<Vec<Pumpf
 
 pub fn parse_instruction(
     instruction: &StructuredInstruction,
-    context: &TransactionContext
+    context: &TransactionContext,
 ) -> Result<Option<Event>, Error> {
     if instruction.program_id() != PUMPFUN_PROGRAM_ID {
         return Err(anyhow!("Not a Pumpfun instruction."));
     }
     let unpacked = PumpfunInstruction::unpack(instruction.data()).map_err(|x| anyhow!(x))?;
     match unpacked {
-        PumpfunInstruction::Initialize => {
-            Ok(Some(Event::Initialize(_parse_initialize_instruction(instruction, context)?)))
-        },
-        PumpfunInstruction::SetParams(set_params) => {
-            Ok(Some(Event::SetParams(_parse_set_params_instruction(instruction, context, set_params)?)))
-        },
-        PumpfunInstruction::Create(create) => {
-            Ok(Some(Event::Create(_parse_create_instruction(instruction, context, create)?)))
-        },
-        PumpfunInstruction::Buy(buy) => {
-            Ok(Some(Event::Swap(_parse_buy_instruction(instruction, context, buy)?)))
-        }
-        PumpfunInstruction::Sell(sell) => {
-            Ok(Some(Event::Swap(_parse_sell_instruction(instruction, context, sell)?)))
-        }
-        PumpfunInstruction::Withdraw => {
-            Ok(Some(Event::Withdraw(_parse_withdraw_instruction(instruction, context)?)))
-        }
+        PumpfunInstruction::Initialize => Ok(Some(Event::Initialize(
+            _parse_initialize_instruction(instruction, context)?,
+        ))),
+        PumpfunInstruction::SetParams(set_params) => Ok(Some(Event::SetParams(
+            _parse_set_params_instruction(instruction, context, set_params)?,
+        ))),
+        PumpfunInstruction::Create(create) => Ok(Some(Event::Create(_parse_create_instruction(
+            instruction,
+            context,
+            create,
+        )?))),
+        PumpfunInstruction::Buy(buy) => Ok(Some(Event::Swap(_parse_buy_instruction(
+            instruction,
+            context,
+            buy,
+        )?))),
+        PumpfunInstruction::Sell(sell) => Ok(Some(Event::Swap(_parse_sell_instruction(
+            instruction,
+            context,
+            sell,
+        )?))),
+        PumpfunInstruction::Withdraw => Ok(Some(Event::Withdraw(_parse_withdraw_instruction(
+            instruction,
+            context,
+        )?))),
         _ => Ok(None),
     }
 }
@@ -107,9 +118,7 @@ fn _parse_initialize_instruction(
 ) -> Result<InitializeEvent, Error> {
     let user = instruction.accounts()[0].to_string();
 
-    Ok(InitializeEvent {
-        user,
-    })
+    Ok(InitializeEvent { user })
 }
 
 fn _parse_set_params_instruction(
@@ -172,18 +181,41 @@ fn _parse_buy_instruction<'a>(
     let user = instruction.accounts()[6].to_string();
     let token_amount = buy.amount;
 
-    let system_transfer_instruction = instruction.inner_instructions().iter().find(|x| x.program_id() == SYSTEM_PROGRAM_ID).unwrap().clone();
-    let system_transfer = system_program_substream::parse_transfer_instruction(system_transfer_instruction.as_ref(), context)?;
+    let system_transfer_instruction = instruction
+        .inner_instructions()
+        .iter()
+        .find(|x| x.program_id() == SYSTEM_PROGRAM_ID)
+        .unwrap()
+        .clone();
+    let system_transfer = system_program_substream::parse_transfer_instruction(
+        system_transfer_instruction.as_ref(),
+        context,
+    )?;
     let sol_amount = Some(system_transfer.lamports);
 
-    let token_transfer_instruction = instruction.inner_instructions().iter().find(|x| x.program_id() == TOKEN_PROGRAM_ID).unwrap().clone();
-    let token_transfer = spl_token_substream::parse_transfer_instruction(token_transfer_instruction.as_ref(), context).map_err(|e| anyhow!(e))?;
+    let token_transfer_instruction = instruction
+        .inner_instructions()
+        .iter()
+        .find(|x| x.program_id() == TOKEN_PROGRAM_ID)
+        .unwrap()
+        .clone();
+    let token_transfer = spl_token_substream::parse_transfer_instruction(
+        token_transfer_instruction.as_ref(),
+        context,
+    )
+    .map_err(|e| anyhow!(e))?;
     let user_token_pre_balance = token_transfer.destination.unwrap().pre_balance;
 
     let trade = match parse_pumpfun_log(instruction) {
         Ok(PumpfunLog::Trade(trade)) => Some(trade),
         _ => None,
     };
+
+    // let complete = match parse_pumpfun_log(instruction) {
+    //     Ok(PumpfunLog::Complete(complete)) => Some(complete),
+    //     _ => None,
+    // };
+
     let virtual_sol_reserves = trade.as_ref().map(|x| x.virtual_sol_reserves);
     let virtual_token_reserves = trade.as_ref().map(|x| x.virtual_token_reserves);
     let real_sol_reserves = trade.as_ref().map(|x| x.real_sol_reserves);
@@ -218,7 +250,7 @@ fn _parse_sell_instruction(
 
     let trade = match parse_pumpfun_log(instruction) {
         Ok(PumpfunLog::Trade(trade)) => Some(trade),
-        _ => None
+        _ => None,
     };
     let sol_amount = trade.as_ref().map(|x| x.sol_amount);
     let virtual_sol_reserves = trade.as_ref().map(|x| x.virtual_sol_reserves);
@@ -228,8 +260,17 @@ fn _parse_sell_instruction(
 
     let direction = "sol".to_string();
 
-    let token_transfer_instruction = instruction.inner_instructions().iter().find(|x| x.program_id() == TOKEN_PROGRAM_ID).unwrap().clone();
-    let token_transfer = spl_token_substream::parse_transfer_instruction(token_transfer_instruction.as_ref(), context).map_err(|e| anyhow!(e))?;
+    let token_transfer_instruction = instruction
+        .inner_instructions()
+        .iter()
+        .find(|x| x.program_id() == TOKEN_PROGRAM_ID)
+        .unwrap()
+        .clone();
+    let token_transfer = spl_token_substream::parse_transfer_instruction(
+        token_transfer_instruction.as_ref(),
+        context,
+    )
+    .map_err(|e| anyhow!(e))?;
     let user_token_pre_balance = token_transfer.source.unwrap().pre_balance;
 
     Ok(SwapEvent {
@@ -253,15 +294,19 @@ fn _parse_withdraw_instruction(
 ) -> Result<WithdrawEvent, Error> {
     let mint = instruction.accounts()[2].to_string();
 
-    Ok(WithdrawEvent {
-        mint,
-    })
+    Ok(WithdrawEvent { mint })
 }
 
 fn parse_pumpfun_log(instruction: &StructuredInstruction) -> Result<PumpfunLog, Error> {
-    let data = instruction.logs().as_ref().context("Failed to parse logs due to truncation")?.iter().find_map(|log| match log {
-        Log::Data(data_log) => data_log.data().ok(),
-        _ => None,
-    }).ok_or(anyhow!("Couldn't find data log."))?;
+    let data = instruction
+        .logs()
+        .as_ref()
+        .context("Failed to parse logs due to truncation")?
+        .iter()
+        .find_map(|log| match log {
+            Log::Data(data_log) => data_log.data().ok(),
+            _ => None,
+        })
+        .ok_or(anyhow!("Couldn't find data log."))?;
     PumpfunLog::unpack(data.as_slice()).map_err(|x| anyhow!(x))
 }
