@@ -1,10 +1,10 @@
 [package]
-name = "pumpfun-amm"
+name = "pumpfun-amm-substream"
 version = "0.0.1"
 edition = "2021"
 
 [lib]
-name = "pumpfun_amm"
+name = "pumpfun_amm_substream"
 crate-type = ["cdylib"]
 
 [dependencies]

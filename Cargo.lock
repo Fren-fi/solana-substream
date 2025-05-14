@@ -618,7 +618,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pumpfun-amm"
+name = "pumpfun-amm-substream"
 version = "0.0.1"
 dependencies = [
  "anyhow",
