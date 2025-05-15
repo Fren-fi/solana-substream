@@ -1,5 +1,4 @@
 use borsh::BorshDeserialize;
-use substreams_solana_utils::pubkey::Pubkey;
 
 #[derive(Debug, BorshDeserialize)]
 pub enum PumpfunAmmInstruction {
@@ -35,7 +34,7 @@ pub struct DepositInstruction {
 }
 
 impl DepositInstruction {
-    fn unpack(data: &[u8]) -> Result<Self, &'static str> {
+    fn _unpack(data: &[u8]) -> Result<Self, &'static str> {
         Self::deserialize(&mut &data[..]).map_err(|_| "Failed to deserialize DepositInstruction.")
     }
 }
@@ -47,7 +46,7 @@ pub struct WithdrawInstruction {
 }
 
 impl WithdrawInstruction {
-    fn unpack(data: &[u8]) -> Result<Self, &'static str> {
+    fn _unpack(data: &[u8]) -> Result<Self, &'static str> {
         Self::deserialize(&mut &data[..]).map_err(|_| "Failed to deserialize WithdrawInstruction.")
     }
 }

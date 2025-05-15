@@ -1,6 +1,4 @@
-use std::f32::consts::E;
-
-use anyhow::{anyhow, Context, Error};
+use anyhow::{anyhow, Error};
 
 use pumpfun_amm::instructions_cpi::BuyCpiInstruction;
 use pumpfun_amm::instructions_cpi::CreatePoolCpiInstruction;
@@ -14,13 +12,11 @@ pub mod pumpfun_amm;
 use pumpfun_amm::constants::PUMPFUN_AMM_PROGRAM_ID;
 use pumpfun_amm::instruction::PumpfunAmmInstruction;
 use pumpfun_amm::instructions_cpi::PumpfunAmmCpiInstruction;
-use pumpfun_amm::log::PumpfunAmmLog;
 
 use substreams_solana_utils as utils;
 use utils::instruction::{
     get_structured_instructions, StructuredInstruction, StructuredInstructions,
 };
-use utils::log::Log;
 use utils::transaction::{get_context, TransactionContext};
 
 pub mod pb;
@@ -116,7 +112,7 @@ pub fn parse_instruction<'a>(
 fn _parse_create_pool_instruction(
     instruction: &StructuredInstruction,
     _context: &TransactionContext,
-    create: pumpfun_amm::instruction::CreatePoolInstruction,
+    _create: pumpfun_amm::instruction::CreatePoolInstruction,
 ) -> Result<CreatePoolEvent, Error> {
     let pool_event: CreatePoolCpiInstruction = instruction
         .inner_instructions()

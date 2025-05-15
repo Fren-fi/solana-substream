@@ -619,7 +619,7 @@ dependencies = [
 
 [[package]]
 name = "pumpfun-amm-substream"
-version = "0.0.1"
+version = "0.1.5"
 dependencies = [
  "anyhow",
  "borsh",
