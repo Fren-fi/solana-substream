@@ -163,9 +163,10 @@ fn _parse_buy_instruction<'a>(
     _context: &TransactionContext,
     _buy: pumpfun_amm::instruction::BuyInstruction,
 ) -> Result<SwapEvent, Error> {
-    let mint = instruction.accounts()[0].to_string(); // pool
+    let pool = instruction.accounts()[0].to_string();
+    let mint = instruction.accounts()[3].to_string();
     let user = instruction.accounts()[1].to_string();
-    let bonding_curve = instruction.accounts()[3].to_string();
+    let bonding_curve = "".to_string();
 
     let trade: BuyCpiInstruction = instruction
         .inner_instructions()
@@ -191,11 +192,13 @@ fn _parse_buy_instruction<'a>(
     let user_token_pre_balance: Option<u64> = Some(0);
     let direction = "token".to_string();
     let is_buy = true;
+    let complete = "".to_string();
 
     Ok(SwapEvent {
         user,
         mint,
         bonding_curve,
+        pool,
         sol_amount,
         token_amount,
         direction,
@@ -208,6 +211,7 @@ fn _parse_buy_instruction<'a>(
         protocol_fee,
         coin_creator_fee,
         timestamp,
+        complete,
     })
 }
 
@@ -216,9 +220,10 @@ fn _parse_sell_instruction<'a>(
     _context: &TransactionContext,
     _sell: pumpfun_amm::instruction::SellInstruction,
 ) -> Result<SwapEvent, Error> {
-    let mint = instruction.accounts()[0].to_string(); // pool
+    let pool = instruction.accounts()[0].to_string();
+    let mint = instruction.accounts()[3].to_string(); // pool
     let user = instruction.accounts()[1].to_string();
-    let bonding_curve = instruction.accounts()[3].to_string();
+    let bonding_curve = "".to_string();
 
     let trade: SellCpiInstruction = instruction
         .inner_instructions()
@@ -244,11 +249,13 @@ fn _parse_sell_instruction<'a>(
     let user_token_pre_balance: Option<u64> = Some(0);
     let direction = "sol".to_string();
     let is_buy = false;
+    let complete = "".to_string();
 
     Ok(SwapEvent {
         user,
         mint,
         bonding_curve,
+        pool,
         sol_amount,
         token_amount,
         direction,
@@ -261,6 +268,7 @@ fn _parse_sell_instruction<'a>(
         protocol_fee,
         coin_creator_fee,
         timestamp,
+        complete,
     })
 }
 
