@@ -84,10 +84,10 @@ pub struct SwapEvent {
     pub mint: ::prost::alloc::string::String,
     #[prost(string, tag="3")]
     pub bonding_curve: ::prost::alloc::string::String,
-    #[prost(uint64, tag="4")]
-    pub min_quote_amount_out: u64,
+    #[prost(uint64, optional, tag="4")]
+    pub sol_amount: ::core::option::Option<u64>,
     #[prost(uint64, tag="5")]
-    pub base_amount_in: u64,
+    pub token_amount: u64,
     #[prost(string, tag="6")]
     pub direction: ::prost::alloc::string::String,
     #[prost(bool, tag="7")]

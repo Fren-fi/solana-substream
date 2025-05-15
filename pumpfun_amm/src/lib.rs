@@ -178,8 +178,9 @@ fn _parse_buy_instruction<'a>(
         )
         .unwrap();
 
-    let base_amount_in: u64 = trade.quote_amount_in;
-    let min_quote_amount_out: u64 = trade.base_amount_out;
+    let sol_amount: Option<u64> = Some(trade.quote_amount_in);
+    let token_amount: u64 = trade.base_amount_out;
+
     let virtual_sol_reserves: Option<u64> = Some(0);
     let virtual_token_reserves: Option<u64> = Some(0);
     let real_sol_reserves: Option<u64> = Some(trade.pool_quote_token_reserves);
@@ -195,8 +196,8 @@ fn _parse_buy_instruction<'a>(
         user,
         mint,
         bonding_curve,
-        min_quote_amount_out,
-        base_amount_in,
+        sol_amount,
+        token_amount,
         direction,
         is_buy,
         virtual_sol_reserves,
@@ -230,8 +231,9 @@ fn _parse_sell_instruction<'a>(
         )
         .unwrap();
 
-    let base_amount_in: u64 = trade.base_amount_in;
-    let min_quote_amount_out: u64 = trade.quote_amount_out;
+    let sol_amount: Option<u64> = Some(trade.quote_amount_out);
+    let token_amount: u64 = trade.base_amount_in;
+
     let virtual_sol_reserves: Option<u64> = Some(0);
     let virtual_token_reserves: Option<u64> = Some(0);
     let real_sol_reserves: Option<u64> = Some(trade.pool_quote_token_reserves);
@@ -247,8 +249,8 @@ fn _parse_sell_instruction<'a>(
         user,
         mint,
         bonding_curve,
-        min_quote_amount_out,
-        base_amount_in,
+        sol_amount,
+        token_amount,
         direction,
         is_buy,
         virtual_sol_reserves,

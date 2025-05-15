@@ -46,8 +46,8 @@ message SwapEvent {
   string user = 1;
   string mint = 2;
   string bonding_curve = 3;
-  uint64 min_quote_amount_out = 4;
-  uint64 base_amount_in = 5;
+  optional uint64 sol_amount = 4;
+  uint64 token_amount = 5;
   string direction = 6;
   bool is_buy = 7;
   optional uint64 virtual_sol_reserves = 8;
