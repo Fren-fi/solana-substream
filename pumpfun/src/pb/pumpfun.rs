@@ -89,22 +89,34 @@ pub struct SwapEvent {
     pub mint: ::prost::alloc::string::String,
     #[prost(string, tag="3")]
     pub bonding_curve: ::prost::alloc::string::String,
-    #[prost(uint64, optional, tag="4")]
+    #[prost(string, tag="4")]
+    pub pool: ::prost::alloc::string::String,
+    #[prost(uint64, optional, tag="5")]
     pub sol_amount: ::core::option::Option<u64>,
-    #[prost(uint64, tag="5")]
+    #[prost(uint64, tag="6")]
     pub token_amount: u64,
-    #[prost(string, tag="6")]
+    #[prost(string, tag="7")]
     pub direction: ::prost::alloc::string::String,
-    #[prost(uint64, optional, tag="7")]
-    pub virtual_sol_reserves: ::core::option::Option<u64>,
-    #[prost(uint64, optional, tag="8")]
-    pub virtual_token_reserves: ::core::option::Option<u64>,
+    #[prost(bool, tag="8")]
+    pub is_buy: bool,
     #[prost(uint64, optional, tag="9")]
-    pub real_sol_reserves: ::core::option::Option<u64>,
+    pub virtual_sol_reserves: ::core::option::Option<u64>,
     #[prost(uint64, optional, tag="10")]
-    pub real_token_reserves: ::core::option::Option<u64>,
+    pub virtual_token_reserves: ::core::option::Option<u64>,
     #[prost(uint64, optional, tag="11")]
+    pub real_sol_reserves: ::core::option::Option<u64>,
+    #[prost(uint64, optional, tag="12")]
+    pub real_token_reserves: ::core::option::Option<u64>,
+    #[prost(uint64, optional, tag="13")]
     pub user_token_pre_balance: ::core::option::Option<u64>,
+    #[prost(uint64, optional, tag="14")]
+    pub protocol_fee: ::core::option::Option<u64>,
+    #[prost(uint64, optional, tag="15")]
+    pub coin_creator_fee: ::core::option::Option<u64>,
+    #[prost(int64, tag="16")]
+    pub timestamp: i64,
+    #[prost(string, tag="17")]
+    pub complete: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

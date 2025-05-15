@@ -180,6 +180,7 @@ fn _parse_buy_instruction<'a>(
     let bonding_curve = instruction.accounts()[3].to_string();
     let user = instruction.accounts()[6].to_string();
     let token_amount = buy.amount;
+    let pool = "".to_string();
 
     let system_transfer_instruction = instruction
         .inner_instructions()
@@ -211,30 +212,45 @@ fn _parse_buy_instruction<'a>(
         _ => None,
     };
 
-    // let complete = match parse_pumpfun_log(instruction) {
-    //     Ok(PumpfunLog::Complete(complete)) => Some(complete),
-    //     _ => None,
-    // };
-
     let virtual_sol_reserves = trade.as_ref().map(|x| x.virtual_sol_reserves);
     let virtual_token_reserves = trade.as_ref().map(|x| x.virtual_token_reserves);
     let real_sol_reserves = trade.as_ref().map(|x| x.real_sol_reserves);
     let real_token_reserves = trade.as_ref().map(|x| x.real_token_reserves);
 
     let direction = "token".to_string();
+    let is_buy = trade.as_ref().map(|x| x.is_buy).unwrap_or(false);
+    let timestamp = trade.as_ref().map(|x| x.timestamp).unwrap_or(0);
+    let protocol_fee = Some(0);
+    let coin_creator_fee = Some(0);
+
+    let complete_log = match parse_pumpfun_log(instruction) {
+        Ok(PumpfunLog::Complete(complete)) => Some(complete),
+        _ => None,
+    };
+    let complete = if complete_log.is_none() {
+        "no".to_string()
+    } else {
+        "yes".to_string()
+    };
 
     Ok(SwapEvent {
         user,
         mint,
         bonding_curve,
+        pool,
         sol_amount,
         token_amount,
         direction,
+        is_buy,
         virtual_sol_reserves,
         virtual_token_reserves,
         real_sol_reserves,
         real_token_reserves,
         user_token_pre_balance,
+        protocol_fee,
+        coin_creator_fee,
+        timestamp,
+        complete,
     })
 }
 
@@ -247,6 +263,7 @@ fn _parse_sell_instruction(
     let user = instruction.accounts()[6].to_string();
     let bonding_curve = instruction.accounts()[3].to_string();
     let token_amount = sell.amount;
+    let pool = "".to_string();
 
     let trade = match parse_pumpfun_log(instruction) {
         Ok(PumpfunLog::Trade(trade)) => Some(trade),
@@ -273,18 +290,39 @@ fn _parse_sell_instruction(
     .map_err(|e| anyhow!(e))?;
     let user_token_pre_balance = token_transfer.source.unwrap().pre_balance;
 
+    let is_buy = trade.as_ref().map(|x| x.is_buy).unwrap_or(false);
+    let timestamp = trade.as_ref().map(|x| x.timestamp).unwrap_or(0);
+    let protocol_fee = Some(0);
+    let coin_creator_fee = Some(0);
+
+    let complete_log = match parse_pumpfun_log(instruction) {
+        Ok(PumpfunLog::Complete(complete)) => Some(complete),
+        _ => None,
+    };
+    let complete = if complete_log.is_none() {
+        "no".to_string()
+    } else {
+        "yes".to_string()
+    };
+
     Ok(SwapEvent {
         user,
         mint,
         bonding_curve,
-        token_amount,
+        pool,
         sol_amount,
+        token_amount,
         direction,
+        is_buy,
         virtual_sol_reserves,
         virtual_token_reserves,
         real_sol_reserves,
         real_token_reserves,
         user_token_pre_balance,
+        protocol_fee,
+        coin_creator_fee,
+        timestamp,
+        complete,
     })
 }
 
