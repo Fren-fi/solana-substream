@@ -21,17 +21,17 @@ message PumpfunAmmEvent {
 
 message CreatePoolEvent {
   string pool = 1;
-  optional string creator = 2;
-  optional string base_mint = 3;
-  optional string quote_mint = 4;
-  optional uint32 base_mint_decimals = 5;
-  optional uint32 quote_mint_decimals = 6;
+  string creator = 2;
+  string base_mint = 3;
+  string quote_mint = 4;
+  uint32 base_mint_decimals = 5;
+  uint32 quote_mint_decimals = 6;
   optional uint64 base_amount_in = 7;
   optional uint64 quote_amount_in = 8;
   optional uint64 pool_base_amount = 9;
   optional uint64 pool_quote_amount = 10;
-  optional string coin_creator = 11;
-  optional int64 timestamp = 12;
+  string coin_creator = 11;
+  int64 timestamp = 12;
 }
 
 message LiquidityEvent {
@@ -57,5 +57,5 @@ message SwapEvent {
   optional uint64 user_token_pre_balance = 12;
   optional uint64 protocol_fee = 13;
   optional uint64 coin_creator_fee = 14;
-  optional int64 timestamp = 15;
+  int64 timestamp = 15;
 }

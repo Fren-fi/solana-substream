@@ -24,7 +24,7 @@ protobuf:
 binaries:
   default:
     type: wasm/rust-v1
-    file: ../target/wasm32-unknown-unknown/release/pumpfun_substream.wasm
+    file: ../target/wasm32-unknown-unknown/release/pumpfun_amm_substream.wasm
 
 modules:
   - name: pumpfun_amm_events
@@ -32,6 +32,6 @@ modules:
     inputs:
       - map: sol:blocks_without_votes
     output:
-      type: proto:pumpfun.PumpfunAmmBlockEvents
+      type: proto:pumpfun_amm.PumpfunAmmBlockEvents
 
 network: solana

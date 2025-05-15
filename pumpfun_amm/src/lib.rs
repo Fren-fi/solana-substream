@@ -1,11 +1,19 @@
+use std::f32::consts::E;
+
 use anyhow::{anyhow, Context, Error};
 
+use pumpfun_amm::instructions_cpi::BuyCpiInstruction;
+use pumpfun_amm::instructions_cpi::CreatePoolCpiInstruction;
+use pumpfun_amm::instructions_cpi::DepositCpiInstruction;
+use pumpfun_amm::instructions_cpi::SellCpiInstruction;
+use pumpfun_amm::instructions_cpi::WithdrawCpiInstruction;
 use substreams_solana::pb::sf::solana::r#type::v1::Block;
 use substreams_solana::pb::sf::solana::r#type::v1::ConfirmedTransaction;
 
 pub mod pumpfun_amm;
 use pumpfun_amm::constants::PUMPFUN_AMM_PROGRAM_ID;
 use pumpfun_amm::instruction::PumpfunAmmInstruction;
+use pumpfun_amm::instructions_cpi::PumpfunAmmCpiInstruction;
 use pumpfun_amm::log::PumpfunAmmLog;
 
 use substreams_solana_utils as utils;
@@ -53,6 +61,7 @@ pub fn parse_transaction(
     let instructions = get_structured_instructions(transaction)?;
     for instruction in instructions.flattened().iter() {
         context.update_balance(&instruction.instruction);
+
         if instruction.program_id() != PUMPFUN_AMM_PROGRAM_ID {
             continue;
         }
@@ -109,26 +118,29 @@ fn _parse_create_pool_instruction(
     _context: &TransactionContext,
     create: pumpfun_amm::instruction::CreatePoolInstruction,
 ) -> Result<CreatePoolEvent, Error> {
-    let pool_event = match parse_pumpfun_amm_log(instruction) {
-        Ok(PumpfunAmmLog::CreatePool(create)) => Some(create),
-        _ => None,
-    };
+    let pool_event: CreatePoolCpiInstruction = instruction
+        .inner_instructions()
+        .iter()
+        .find_map(
+            |inner_ix| match PumpfunAmmCpiInstruction::unpack(inner_ix.data()).unwrap() {
+                PumpfunAmmCpiInstruction::CreatePoolCpi(pool_event) => Some(pool_event),
+                _ => None,
+            },
+        )
+        .unwrap();
 
-    let pool = pool_event
-        .as_ref()
-        .map(|x| x.pool.to_string())
-        .unwrap_or_default();
-    let creator = pool_event.as_ref().map(|x| x.creator.to_string());
-    let coin_creator = pool_event.as_ref().map(|x| x.coin_creator.to_string());
-    let base_mint = pool_event.as_ref().map(|x| x.base_mint.to_string());
-    let quote_mint = pool_event.as_ref().map(|x| x.quote_mint.to_string());
-    let base_mint_decimals = pool_event.as_ref().map(|x| x.base_mint_decimals as u32);
-    let quote_mint_decimals = pool_event.as_ref().map(|x| x.quote_mint_decimals as u32);
-    let base_amount_in = pool_event.as_ref().map(|x| x.base_amount_in);
-    let quote_amount_in = pool_event.as_ref().map(|x| x.quote_amount_in);
-    let pool_base_amount: Option<u64> = pool_event.as_ref().map(|x| x.pool_base_amount);
-    let pool_quote_amount: Option<u64> = pool_event.as_ref().map(|x| x.pool_quote_amount);
-    let timestamp = pool_event.as_ref().map(|x| x.timestamp);
+    let pool = pool_event.pool.to_string();
+    let creator = pool_event.creator.to_string();
+    let coin_creator = pool_event.coin_creator.to_string();
+    let base_mint = pool_event.base_mint.to_string();
+    let quote_mint = pool_event.quote_mint.to_string();
+    let base_mint_decimals = pool_event.base_mint_decimals as u32;
+    let quote_mint_decimals = pool_event.quote_mint_decimals as u32;
+    let base_amount_in = Some(pool_event.base_amount_in);
+    let quote_amount_in = Some(pool_event.quote_amount_in);
+    let pool_base_amount = Some(pool_event.base_amount_in);
+    let pool_quote_amount = Some(pool_event.pool_quote_amount);
+    let timestamp = pool_event.timestamp;
 
     Ok(CreatePoolEvent {
         pool,
@@ -148,33 +160,33 @@ fn _parse_create_pool_instruction(
 
 fn _parse_buy_instruction<'a>(
     instruction: &StructuredInstruction<'a>,
-    context: &TransactionContext,
-    buy: pumpfun_amm::instruction::BuyInstruction,
+    _context: &TransactionContext,
+    _buy: pumpfun_amm::instruction::BuyInstruction,
 ) -> Result<SwapEvent, Error> {
     let mint = instruction.accounts()[0].to_string(); // pool
     let user = instruction.accounts()[1].to_string();
     let bonding_curve = instruction.accounts()[3].to_string();
 
-    let trade = match parse_pumpfun_amm_log(instruction) {
-        Ok(PumpfunAmmLog::Buy(buy)) => Some(buy),
-        _ => None,
-    };
+    let trade: BuyCpiInstruction = instruction
+        .inner_instructions()
+        .iter()
+        .find_map(
+            |inner_ix| match PumpfunAmmCpiInstruction::unpack(inner_ix.data()).unwrap() {
+                PumpfunAmmCpiInstruction::BuyCpi(trade) => Some(trade),
+                _ => None,
+            },
+        )
+        .unwrap();
 
-    let base_amount_in: u64 = trade
-        .as_ref()
-        .map(|x| x.quote_amount_in)
-        .unwrap_or_default();
-    let min_quote_amount_out: u64 = trade
-        .as_ref()
-        .map(|x| x.base_amount_out)
-        .unwrap_or_default();
+    let base_amount_in: u64 = trade.quote_amount_in;
+    let min_quote_amount_out: u64 = trade.base_amount_out;
     let virtual_sol_reserves: Option<u64> = Some(0);
     let virtual_token_reserves: Option<u64> = Some(0);
-    let real_sol_reserves: Option<u64> = trade.as_ref().map(|x| x.pool_quote_token_reserves);
-    let real_token_reserves: Option<u64> = trade.as_ref().map(|x| x.pool_base_token_reserves);
-    let protocol_fee: Option<u64> = trade.as_ref().map(|x| x.protocol_fee);
-    let coin_creator_fee: Option<u64> = trade.as_ref().map(|x| x.coin_creator_fee);
-    let timestamp: Option<i64> = trade.as_ref().map(|x| x.timestamp);
+    let real_sol_reserves: Option<u64> = Some(trade.pool_quote_token_reserves);
+    let real_token_reserves: Option<u64> = Some(trade.pool_base_token_reserves);
+    let protocol_fee: Option<u64> = Some(trade.protocol_fee);
+    let coin_creator_fee: Option<u64> = Some(trade.coin_creator_fee);
+    let timestamp: i64 = trade.timestamp;
     let user_token_pre_balance: Option<u64> = Some(0);
     let direction = "token".to_string();
     let is_buy = true;
@@ -201,29 +213,32 @@ fn _parse_buy_instruction<'a>(
 fn _parse_sell_instruction<'a>(
     instruction: &StructuredInstruction<'a>,
     _context: &TransactionContext,
-    _buy: pumpfun_amm::instruction::SellInstruction,
+    _sell: pumpfun_amm::instruction::SellInstruction,
 ) -> Result<SwapEvent, Error> {
     let mint = instruction.accounts()[0].to_string(); // pool
     let user = instruction.accounts()[1].to_string();
     let bonding_curve = instruction.accounts()[3].to_string();
 
-    let trade = match parse_pumpfun_amm_log(instruction) {
-        Ok(PumpfunAmmLog::Sell(sell)) => Some(sell),
-        _ => None,
-    };
+    let trade: SellCpiInstruction = instruction
+        .inner_instructions()
+        .iter()
+        .find_map(
+            |inner_ix| match PumpfunAmmCpiInstruction::unpack(inner_ix.data()).unwrap() {
+                PumpfunAmmCpiInstruction::SellCpi(trade) => Some(trade),
+                _ => None,
+            },
+        )
+        .unwrap();
 
-    let base_amount_in: u64 = trade.as_ref().map(|x| x.base_amount_in).unwrap_or_default();
-    let min_quote_amount_out: u64 = trade
-        .as_ref()
-        .map(|x| x.quote_amount_out)
-        .unwrap_or_default();
+    let base_amount_in: u64 = trade.base_amount_in;
+    let min_quote_amount_out: u64 = trade.quote_amount_out;
     let virtual_sol_reserves: Option<u64> = Some(0);
     let virtual_token_reserves: Option<u64> = Some(0);
-    let real_sol_reserves: Option<u64> = trade.as_ref().map(|x| x.pool_quote_token_reserves);
-    let real_token_reserves: Option<u64> = trade.as_ref().map(|x| x.pool_base_token_reserves);
-    let protocol_fee: Option<u64> = trade.as_ref().map(|x| x.protocol_fee);
-    let coin_creator_fee: Option<u64> = trade.as_ref().map(|x| x.coin_creator_fee);
-    let timestamp: Option<i64> = trade.as_ref().map(|x| x.timestamp);
+    let real_sol_reserves: Option<u64> = Some(trade.pool_quote_token_reserves);
+    let real_token_reserves: Option<u64> = Some(trade.pool_base_token_reserves);
+    let protocol_fee: Option<u64> = Some(trade.protocol_fee);
+    let coin_creator_fee: Option<u64> = Some(trade.coin_creator_fee);
+    let timestamp: i64 = trade.timestamp;
     let user_token_pre_balance: Option<u64> = Some(0);
     let direction = "sol".to_string();
     let is_buy = false;
@@ -254,16 +269,19 @@ fn _parse_deposit_instruction(
     let pool = instruction.accounts()[0].to_string();
     let user = instruction.accounts()[2].to_string();
 
-    let liquidity = match parse_pumpfun_amm_log(instruction) {
-        Ok(PumpfunAmmLog::Withdraw(withdraw)) => Some(withdraw),
-        _ => None,
-    };
+    let liquidity: DepositCpiInstruction = instruction
+        .inner_instructions()
+        .iter()
+        .find_map(
+            |inner_ix| match PumpfunAmmCpiInstruction::unpack(inner_ix.data()).unwrap() {
+                PumpfunAmmCpiInstruction::DepositCpi(liquidity) => Some(liquidity),
+                _ => None,
+            },
+        )
+        .unwrap();
 
-    let pool_base_token_reserves: Option<u64> =
-        liquidity.as_ref().map(|x| x.pool_base_token_reserves);
-    let pool_quote_token_reserves: Option<u64> =
-        liquidity.as_ref().map(|x| x.pool_quote_token_reserves);
-
+    let pool_base_token_reserves: Option<u64> = Some(liquidity.pool_base_token_reserves);
+    let pool_quote_token_reserves: Option<u64> = Some(liquidity.pool_quote_token_reserves);
     let is_add = true;
 
     Ok(LiquidityEvent {
@@ -282,16 +300,19 @@ fn _parse_withdraw_instruction(
     let pool = instruction.accounts()[0].to_string();
     let user = instruction.accounts()[2].to_string();
 
-    let liquidity = match parse_pumpfun_amm_log(instruction) {
-        Ok(PumpfunAmmLog::Withdraw(withdraw)) => Some(withdraw),
-        _ => None,
-    };
+    let liquidity: WithdrawCpiInstruction = instruction
+        .inner_instructions()
+        .iter()
+        .find_map(
+            |inner_ix| match PumpfunAmmCpiInstruction::unpack(inner_ix.data()).unwrap() {
+                PumpfunAmmCpiInstruction::WithdrawCpi(liquidity) => Some(liquidity),
+                _ => None,
+            },
+        )
+        .unwrap();
 
-    let pool_base_token_reserves: Option<u64> =
-        liquidity.as_ref().map(|x| x.pool_base_token_reserves);
-    let pool_quote_token_reserves: Option<u64> =
-        liquidity.as_ref().map(|x| x.pool_quote_token_reserves);
-
+    let pool_base_token_reserves: Option<u64> = Some(liquidity.pool_base_token_reserves);
+    let pool_quote_token_reserves: Option<u64> = Some(liquidity.pool_quote_token_reserves);
     let is_add = false;
 
     Ok(LiquidityEvent {
@@ -301,18 +322,4 @@ fn _parse_withdraw_instruction(
         pool_base_token_reserves,
         pool_quote_token_reserves,
     })
-}
-
-fn parse_pumpfun_amm_log(instruction: &StructuredInstruction) -> Result<PumpfunAmmLog, Error> {
-    let data = instruction
-        .logs()
-        .as_ref()
-        .context("Failed to parse logs due to truncation")?
-        .iter()
-        .find_map(|log| match log {
-            Log::Data(data_log) => data_log.data().ok(),
-            _ => None,
-        })
-        .ok_or(anyhow!("Couldn't find data log."))?;
-    PumpfunAmmLog::unpack(data.as_slice()).map_err(|x| anyhow!(x))
 }

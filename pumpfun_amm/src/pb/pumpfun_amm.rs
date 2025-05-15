@@ -38,16 +38,16 @@ pub mod pumpfun_amm_event {
 pub struct CreatePoolEvent {
     #[prost(string, tag="1")]
     pub pool: ::prost::alloc::string::String,
-    #[prost(string, optional, tag="2")]
-    pub creator: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(string, optional, tag="3")]
-    pub base_mint: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(string, optional, tag="4")]
-    pub quote_mint: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(uint32, optional, tag="5")]
-    pub base_mint_decimals: ::core::option::Option<u32>,
-    #[prost(uint32, optional, tag="6")]
-    pub quote_mint_decimals: ::core::option::Option<u32>,
+    #[prost(string, tag="2")]
+    pub creator: ::prost::alloc::string::String,
+    #[prost(string, tag="3")]
+    pub base_mint: ::prost::alloc::string::String,
+    #[prost(string, tag="4")]
+    pub quote_mint: ::prost::alloc::string::String,
+    #[prost(uint32, tag="5")]
+    pub base_mint_decimals: u32,
+    #[prost(uint32, tag="6")]
+    pub quote_mint_decimals: u32,
     #[prost(uint64, optional, tag="7")]
     pub base_amount_in: ::core::option::Option<u64>,
     #[prost(uint64, optional, tag="8")]
@@ -56,10 +56,10 @@ pub struct CreatePoolEvent {
     pub pool_base_amount: ::core::option::Option<u64>,
     #[prost(uint64, optional, tag="10")]
     pub pool_quote_amount: ::core::option::Option<u64>,
-    #[prost(string, optional, tag="11")]
-    pub coin_creator: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(int64, optional, tag="12")]
-    pub timestamp: ::core::option::Option<i64>,
+    #[prost(string, tag="11")]
+    pub coin_creator: ::prost::alloc::string::String,
+    #[prost(int64, tag="12")]
+    pub timestamp: i64,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -106,7 +106,7 @@ pub struct SwapEvent {
     pub protocol_fee: ::core::option::Option<u64>,
     #[prost(uint64, optional, tag="14")]
     pub coin_creator_fee: ::core::option::Option<u64>,
-    #[prost(int64, optional, tag="15")]
-    pub timestamp: ::core::option::Option<i64>,
+    #[prost(int64, tag="15")]
+    pub timestamp: i64,
 }
 // @@protoc_insertion_point(module)
