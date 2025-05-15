@@ -62,6 +62,8 @@ pub fn parse_transaction(
             continue;
         }
 
+        // substreams::log::println(format!("txn: {:?}", transaction.id()));
+
         match parse_instruction(&instruction, &context) {
             Ok(Some(event)) => events.push(PumpfunAmmEvent { event: Some(event) }),
             Ok(None) => (),
@@ -329,3 +331,26 @@ fn _parse_withdraw_instruction(
         pool_quote_token_reserves,
     })
 }
+
+// fn parse_buy_cpi_instruction(
+//     instruction: &StructuredInstruction,
+// ) -> Result<BuyCpiInstruction, anyhow::Error> {
+//     let buy_instruction = instruction
+//         .inner_instructions()
+//         .iter()
+//         .find_map(|inner_ix| {
+//             // Optional: Check data length to avoid invalid deserialization
+//             if inner_ix.data().len() < 8 {
+//                 return None;
+//             }
+//             PumpfunAmmCpiInstruction::unpack(inner_ix.data()).ok()
+//         })
+//         .ok_or(anyhow!("Couldn't find data BuyCpiInstruction."))?;
+
+//     match buy_instruction {
+//         PumpfunAmmCpiInstruction::BuyCpi(trade) => Ok(trade),
+//         _ => Err(anyhow!(
+//             "Found instruction but it was not a BuyCpiInstruction"
+//         )),
+//     }
+// }

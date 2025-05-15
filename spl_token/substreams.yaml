@@ -1,7 +1,7 @@
 specVersion: v0.1.0
 package:
   name: 'frens_spl_token_events'
-  version: v0.1.4
+  version: v0.1.6
   description: SPL Token Program events substream
   image: ./sol.png
 
