@@ -4,12 +4,12 @@ members = [
     "pumpfun",
     "system_program",
     "mpl_token_metadata",
-    "pumpfun_amm",
+    "pumpswap",
 ]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.5"
+version = "0.1.7"
 edition = "2021"
 
 [workspace.dependencies]

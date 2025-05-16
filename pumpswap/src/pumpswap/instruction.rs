@@ -1,7 +1,7 @@
 use borsh::BorshDeserialize;
 
 #[derive(Debug, BorshDeserialize)]
-pub enum PumpfunAmmInstruction {
+pub enum PumpswapInstruction {
     CreatePool(CreatePoolInstruction),
     Buy(BuyInstruction),
     Sell(SellInstruction),
@@ -10,7 +10,7 @@ pub enum PumpfunAmmInstruction {
     Unknown,
 }
 
-impl PumpfunAmmInstruction {
+impl PumpswapInstruction {
     pub fn unpack(data: &[u8]) -> Result<Self, &'static str> {
         let (tag, data) = data.split_at(8);
         match tag {

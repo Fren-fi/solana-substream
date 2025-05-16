@@ -1,17 +1,17 @@
 use anyhow::{anyhow, Error};
 
-use pumpfun_amm::instructions_cpi::BuyCpiInstruction;
-use pumpfun_amm::instructions_cpi::CreatePoolCpiInstruction;
-use pumpfun_amm::instructions_cpi::DepositCpiInstruction;
-use pumpfun_amm::instructions_cpi::SellCpiInstruction;
-use pumpfun_amm::instructions_cpi::WithdrawCpiInstruction;
+use pumpswap::instructions_cpi::BuyCpiInstruction;
+use pumpswap::instructions_cpi::CreatePoolCpiInstruction;
+use pumpswap::instructions_cpi::DepositCpiInstruction;
+use pumpswap::instructions_cpi::SellCpiInstruction;
+use pumpswap::instructions_cpi::WithdrawCpiInstruction;
 use substreams_solana::pb::sf::solana::r#type::v1::Block;
 use substreams_solana::pb::sf::solana::r#type::v1::ConfirmedTransaction;
 
-pub mod pumpfun_amm;
-use pumpfun_amm::constants::PUMPFUN_AMM_PROGRAM_ID;
-use pumpfun_amm::instruction::PumpfunAmmInstruction;
-use pumpfun_amm::instructions_cpi::PumpfunAmmCpiInstruction;
+pub mod pumpswap;
+use pumpswap::constants::PUMPSWAP_PROGRAM_ID;
+use pumpswap::instruction::PumpswapInstruction;
+use pumpswap::instructions_cpi::PumpswapCpiInstruction;
 
 use substreams_solana_utils as utils;
 use utils::instruction::{
@@ -20,21 +20,21 @@ use utils::instruction::{
 use utils::transaction::{get_context, TransactionContext};
 
 pub mod pb;
-use pb::pumpfun_amm::pumpfun_amm_event::Event;
-use pb::pumpfun_amm::*;
+use pb::pumpswap::pumpswap_event::Event;
+use pb::pumpswap::*;
 
 #[substreams::handlers::map]
-fn pumpfun_amm_events(block: Block) -> Result<PumpfunAmmBlockEvents, Error> {
+fn pumpswap_events(block: Block) -> Result<PumpswapBlockEvents, Error> {
     let transactions = parse_block(&block);
-    Ok(PumpfunAmmBlockEvents { transactions })
+    Ok(PumpswapBlockEvents { transactions })
 }
 
-pub fn parse_block(block: &Block) -> Vec<PumpfunAmmTransactionEvents> {
-    let mut block_events: Vec<PumpfunAmmTransactionEvents> = Vec::new();
+pub fn parse_block(block: &Block) -> Vec<PumpswapTransactionEvents> {
+    let mut block_events: Vec<PumpswapTransactionEvents> = Vec::new();
     for transaction in block.transactions.iter() {
         if let Ok(events) = parse_transaction(transaction) {
             if !events.is_empty() {
-                block_events.push(PumpfunAmmTransactionEvents {
+                block_events.push(PumpswapTransactionEvents {
                     signature: utils::transaction::get_signature(&transaction),
                     events,
                 });
@@ -44,28 +44,26 @@ pub fn parse_block(block: &Block) -> Vec<PumpfunAmmTransactionEvents> {
     block_events
 }
 
-pub fn parse_transaction(
-    transaction: &ConfirmedTransaction,
-) -> Result<Vec<PumpfunAmmEvent>, Error> {
+pub fn parse_transaction(transaction: &ConfirmedTransaction) -> Result<Vec<PumpswapEvent>, Error> {
     if let Some(_) = transaction.meta.as_ref().unwrap().err {
         return Ok(Vec::new());
     }
 
-    let mut events: Vec<PumpfunAmmEvent> = Vec::new();
+    let mut events: Vec<PumpswapEvent> = Vec::new();
 
     let mut context = get_context(transaction)?;
     let instructions = get_structured_instructions(transaction)?;
     for instruction in instructions.flattened().iter() {
         context.update_balance(&instruction.instruction);
 
-        if instruction.program_id() != PUMPFUN_AMM_PROGRAM_ID {
+        if instruction.program_id() != PUMPSWAP_PROGRAM_ID {
             continue;
         }
 
         // substreams::log::println(format!("txn: {:?}", transaction.id()));
 
         match parse_instruction(&instruction, &context) {
-            Ok(Some(event)) => events.push(PumpfunAmmEvent { event: Some(event) }),
+            Ok(Some(event)) => events.push(PumpswapEvent { event: Some(event) }),
             Ok(None) => (),
             Err(error) => substreams::log::println(format!(
                 "Failed to process instruction of transaction {}: {}",
@@ -80,30 +78,30 @@ pub fn parse_instruction<'a>(
     instruction: &StructuredInstruction<'a>,
     context: &TransactionContext,
 ) -> Result<Option<Event>, Error> {
-    if instruction.program_id() != PUMPFUN_AMM_PROGRAM_ID {
+    if instruction.program_id() != PUMPSWAP_PROGRAM_ID {
         return Err(anyhow!("Not a Pumpfun Amm instruction."));
     }
 
-    let unpacked = PumpfunAmmInstruction::unpack(instruction.data()).map_err(|x| anyhow!(x))?;
+    let unpacked = PumpswapInstruction::unpack(instruction.data()).map_err(|x| anyhow!(x))?;
     match unpacked {
-        PumpfunAmmInstruction::CreatePool(create) => Ok(Some(Event::CreatePool(
+        PumpswapInstruction::CreatePool(create) => Ok(Some(Event::CreatePool(
             _parse_create_pool_instruction(instruction, context, create)?,
         ))),
-        PumpfunAmmInstruction::Buy(buy) => Ok(Some(Event::Swap(_parse_buy_instruction(
+        PumpswapInstruction::Buy(buy) => Ok(Some(Event::Swap(_parse_buy_instruction(
             instruction,
             context,
             buy,
         )?))),
-        PumpfunAmmInstruction::Sell(sell) => Ok(Some(Event::Swap(_parse_sell_instruction(
+        PumpswapInstruction::Sell(sell) => Ok(Some(Event::Swap(_parse_sell_instruction(
             instruction,
             context,
             sell,
         )?))),
-        PumpfunAmmInstruction::Deposit => Ok(Some(Event::Liquidity(_parse_deposit_instruction(
+        PumpswapInstruction::Deposit => Ok(Some(Event::Liquidity(_parse_deposit_instruction(
             instruction,
             context,
         )?))),
-        PumpfunAmmInstruction::Withdraw => Ok(Some(Event::Liquidity(_parse_withdraw_instruction(
+        PumpswapInstruction::Withdraw => Ok(Some(Event::Liquidity(_parse_withdraw_instruction(
             instruction,
             context,
         )?))),
@@ -114,14 +112,14 @@ pub fn parse_instruction<'a>(
 fn _parse_create_pool_instruction(
     instruction: &StructuredInstruction,
     _context: &TransactionContext,
-    _create: pumpfun_amm::instruction::CreatePoolInstruction,
+    _create: pumpswap::instruction::CreatePoolInstruction,
 ) -> Result<CreatePoolEvent, Error> {
     let pool_event: CreatePoolCpiInstruction = instruction
         .inner_instructions()
         .iter()
         .find_map(
-            |inner_ix| match PumpfunAmmCpiInstruction::unpack(inner_ix.data()).unwrap() {
-                PumpfunAmmCpiInstruction::CreatePoolCpi(pool_event) => Some(pool_event),
+            |inner_ix| match PumpswapCpiInstruction::unpack(inner_ix.data()).unwrap() {
+                PumpswapCpiInstruction::CreatePoolCpi(pool_event) => Some(pool_event),
                 _ => None,
             },
         )
@@ -159,7 +157,7 @@ fn _parse_create_pool_instruction(
 fn _parse_buy_instruction<'a>(
     instruction: &StructuredInstruction<'a>,
     _context: &TransactionContext,
-    _buy: pumpfun_amm::instruction::BuyInstruction,
+    _buy: pumpswap::instruction::BuyInstruction,
 ) -> Result<SwapEvent, Error> {
     let pool = instruction.accounts()[0].to_string();
     let mint = instruction.accounts()[3].to_string();
@@ -170,8 +168,8 @@ fn _parse_buy_instruction<'a>(
         .inner_instructions()
         .iter()
         .find_map(
-            |inner_ix| match PumpfunAmmCpiInstruction::unpack(inner_ix.data()).unwrap() {
-                PumpfunAmmCpiInstruction::BuyCpi(trade) => Some(trade),
+            |inner_ix| match PumpswapCpiInstruction::unpack(inner_ix.data()).unwrap() {
+                PumpswapCpiInstruction::BuyCpi(trade) => Some(trade),
                 _ => None,
             },
         )
@@ -185,7 +183,7 @@ fn _parse_buy_instruction<'a>(
     let real_sol_reserves: Option<u64> = Some(trade.pool_quote_token_reserves);
     let real_token_reserves: Option<u64> = Some(trade.pool_base_token_reserves);
     let protocol_fee: Option<u64> = Some(trade.protocol_fee);
-    let coin_creator_fee: Option<u64> = Some(trade.coin_creator_fee);
+    let coin_creator_fee: Option<u64> = Some(0);
     let timestamp: i64 = trade.timestamp;
     let user_token_pre_balance: Option<u64> = Some(0);
     let direction = "token".to_string();
@@ -216,7 +214,7 @@ fn _parse_buy_instruction<'a>(
 fn _parse_sell_instruction<'a>(
     instruction: &StructuredInstruction<'a>,
     _context: &TransactionContext,
-    _sell: pumpfun_amm::instruction::SellInstruction,
+    _sell: pumpswap::instruction::SellInstruction,
 ) -> Result<SwapEvent, Error> {
     let pool = instruction.accounts()[0].to_string();
     let mint = instruction.accounts()[3].to_string(); // pool
@@ -227,8 +225,8 @@ fn _parse_sell_instruction<'a>(
         .inner_instructions()
         .iter()
         .find_map(
-            |inner_ix| match PumpfunAmmCpiInstruction::unpack(inner_ix.data()).unwrap() {
-                PumpfunAmmCpiInstruction::SellCpi(trade) => Some(trade),
+            |inner_ix| match PumpswapCpiInstruction::unpack(inner_ix.data()).unwrap() {
+                PumpswapCpiInstruction::SellCpi(trade) => Some(trade),
                 _ => None,
             },
         )
@@ -242,7 +240,7 @@ fn _parse_sell_instruction<'a>(
     let real_sol_reserves: Option<u64> = Some(trade.pool_quote_token_reserves);
     let real_token_reserves: Option<u64> = Some(trade.pool_base_token_reserves);
     let protocol_fee: Option<u64> = Some(trade.protocol_fee);
-    let coin_creator_fee: Option<u64> = Some(trade.coin_creator_fee);
+    let coin_creator_fee: Option<u64> = Some(0);
     let timestamp: i64 = trade.timestamp;
     let user_token_pre_balance: Option<u64> = Some(0);
     let direction = "sol".to_string();
@@ -281,8 +279,8 @@ fn _parse_deposit_instruction(
         .inner_instructions()
         .iter()
         .find_map(
-            |inner_ix| match PumpfunAmmCpiInstruction::unpack(inner_ix.data()).unwrap() {
-                PumpfunAmmCpiInstruction::DepositCpi(liquidity) => Some(liquidity),
+            |inner_ix| match PumpswapCpiInstruction::unpack(inner_ix.data()).unwrap() {
+                PumpswapCpiInstruction::DepositCpi(liquidity) => Some(liquidity),
                 _ => None,
             },
         )
@@ -312,8 +310,8 @@ fn _parse_withdraw_instruction(
         .inner_instructions()
         .iter()
         .find_map(
-            |inner_ix| match PumpfunAmmCpiInstruction::unpack(inner_ix.data()).unwrap() {
-                PumpfunAmmCpiInstruction::WithdrawCpi(liquidity) => Some(liquidity),
+            |inner_ix| match PumpswapCpiInstruction::unpack(inner_ix.data()).unwrap() {
+                PumpswapCpiInstruction::WithdrawCpi(liquidity) => Some(liquidity),
                 _ => None,
             },
         )
@@ -343,12 +341,12 @@ fn _parse_withdraw_instruction(
 //             if inner_ix.data().len() < 8 {
 //                 return None;
 //             }
-//             PumpfunAmmCpiInstruction::unpack(inner_ix.data()).ok()
+//             PumpswapCpiInstruction::unpack(inner_ix.data()).ok()
 //         })
 //         .ok_or(anyhow!("Couldn't find data BuyCpiInstruction."))?;
 
 //     match buy_instruction {
-//         PumpfunAmmCpiInstruction::BuyCpi(trade) => Ok(trade),
+//         PumpswapCpiInstruction::BuyCpi(trade) => Ok(trade),
 //         _ => Err(anyhow!(
 //             "Found instruction but it was not a BuyCpiInstruction"
 //         )),

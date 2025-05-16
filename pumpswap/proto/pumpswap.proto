@@ -1,17 +1,17 @@
 syntax = "proto3";
 
-package pumpfun_amm;
+package pumpswap;
 
-message PumpfunAmmBlockEvents {
-  repeated PumpfunAmmTransactionEvents transactions = 1;
+message PumpswapBlockEvents {
+  repeated PumpswapTransactionEvents transactions = 1;
 }
 
-message PumpfunAmmTransactionEvents {
+message PumpswapTransactionEvents {
   string signature = 1;
-  repeated PumpfunAmmEvent events = 2;
+  repeated PumpswapEvent events = 2;
 }
 
-message PumpfunAmmEvent {
+message PumpswapEvent {
   oneof event {
     LiquidityEvent liquidity = 1;
     SwapEvent swap = 2;

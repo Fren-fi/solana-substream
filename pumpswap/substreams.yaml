@@ -1,14 +1,16 @@
 specVersion: v0.1.0
 package:
-  name: frens_pumpfun_amm_events
-  version: v0.1.6
+  name: frens_pumpswap_events
+  version: v0.1.7
+  description: Pumpswap events substream
+  image: ./pumpfun.png
 
 imports:
   sol: https://spkg.io/streamingfast/solana-common-v0.3.0.spkg
 
 protobuf:
   files:
-    - pumpfun_amm.proto
+    - pumpswap.proto
   importPaths:
     - ./proto
   excludePaths:
@@ -24,14 +26,14 @@ protobuf:
 binaries:
   default:
     type: wasm/rust-v1
-    file: ../target/wasm32-unknown-unknown/release/pumpfun_amm_substream.wasm
+    file: ../target/wasm32-unknown-unknown/release/pumpswap_substream.wasm
 
 modules:
-  - name: pumpfun_amm_events
+  - name: pumpswap_events
     kind: map
     inputs:
       - map: sol:blocks_without_votes
     output:
-      type: proto:pumpfun_amm.PumpfunAmmBlockEvents
+      type: proto:pumpswap.PumpswapBlockEvents
 
 network: solana

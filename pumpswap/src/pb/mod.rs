@@ -1,8 +1,8 @@
 // @generated
-// @@protoc_insertion_point(attribute:pumpfun_amm)
-pub mod pumpfun_amm {
-    include!("pumpfun_amm.rs");
-    // @@protoc_insertion_point(pumpfun_amm)
+// @@protoc_insertion_point(attribute:pumpswap)
+pub mod pumpswap {
+    include!("pumpswap.rs");
+    // @@protoc_insertion_point(pumpswap)
 }
 pub mod sf {
     pub mod solana {

@@ -1,10 +1,10 @@
 [package]
-name = "pumpfun-amm-substream"
+name = "pumpswap-substream"
 version.workspace = true
 edition.workspace = true
 
 [lib]
-name = "pumpfun_amm_substream"
+name = "pumpswap_substream"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
