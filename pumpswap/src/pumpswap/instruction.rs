@@ -1,5 +1,4 @@
 use borsh::BorshDeserialize;
-use substreams_solana_utils::pubkey::Pubkey;
 
 #[derive(Debug, BorshDeserialize)]
 pub enum PumpswapInstruction {
@@ -57,7 +56,7 @@ pub struct CreatePoolInstruction {
     pub index: u16,
     pub base_amount_in: u64,
     pub quote_amount_in: u64,
-    pub coin_creator: Pubkey,
+    // pub coin_creator: Pubkey, // (125) length doesn't match pubkey 11111111111111111111111111111111
 }
 
 impl CreatePoolInstruction {

@@ -63,7 +63,7 @@ pub struct CreatePoolCpiInstruction {
     pub lp_mint: Pubkey,
     pub user_base_token_account: Pubkey,
     pub user_quote_token_account: Pubkey,
-    pub coin_creator: Pubkey,
+    // pub coin_creator: Pubkey, // (125) length doesn't match pubkey 11111111111111111111111111111111
 }
 impl CreatePoolCpiInstruction {
     fn unpack(data: &[u8]) -> Result<Self, &'static str> {

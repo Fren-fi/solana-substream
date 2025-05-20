@@ -1,7 +1,7 @@
 specVersion: v0.1.0
 package:
   name: frens_pumpswap_events
-  version: v0.1.8
+  version: v0.1.9
   description: Pumpswap events substream
   image: ./pumpfun.png
 

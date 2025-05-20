@@ -127,7 +127,7 @@ fn _parse_create_pool_instruction(
 
     let pool = pool_event.pool.to_string();
     let creator = pool_event.creator.to_string();
-    let coin_creator = pool_event.coin_creator.to_string();
+    let coin_creator = "11111111111111111111111111111111".to_string();
     let base_mint = pool_event.base_mint.to_string();
     let quote_mint = pool_event.quote_mint.to_string();
     let base_mint_decimals = pool_event.base_mint_decimals as u32;
